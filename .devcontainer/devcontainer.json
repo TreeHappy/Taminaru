@@ -8,7 +8,8 @@
       },
       "ghcr.io/devcontainers/features/starship:1": {
         "version": "latest"
-      }
+    },
+    "ghcr.io/prulloac/devcontainer-features/chezmoi:1": {}
     },
     "postCreateCommand": "bash setup.sh",
     "settings": {
