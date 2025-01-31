@@ -1,35 +1,20 @@
-# syntax=docker/dockerfile:1
+FROM archlinux:base-devel
 
-FROM alpine:latest
-
-# Install system packages
-RUN apk add --no-cache \
+# Install all tools from official repos
+RUN pacman -Sy --noconfirm --needed \
     neovim \
     fzf \
     ripgrep \
+    eza \
     direnv \
+    yazi \
     git \
+    starship \
     bash \
-    curl \
-    unzip
-
-# Install eza from GitHub release
-RUN curl -LOf https://github.com/eza-community/eza/releases/latest/download/eza-x86_64-unknown-linux-musl.zip && \
-    unzip eza-x86_64-unknown-linux-musl.zip -d /tmp/eza && \
-    mv /tmp/eza/bin/eza /usr/local/bin/ && \
-    rm -rf /tmp/eza eza-x86_64-unknown-linux-musl.zip
-
-# Install yazi from GitHub release
-RUN curl -LOf https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.tar.gz && \
-    tar -xzf yazi-x86_64-unknown-linux-musl.tar.gz -C /usr/local/bin yazi && \
-    rm yazi-x86_64-unknown-linux-musl.tar.gz
-
-# Install starship
-RUN curl -fsS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
+    curl
 
 # Create non-root user
-RUN adduser -D devuser && \
-    mkdir -p /home/devuser/.config && \
+RUN useradd -m devuser && \
     chown -R devuser:devuser /home/devuser
 
 USER devuser
