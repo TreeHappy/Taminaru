@@ -4,5 +4,8 @@
       "dockerfile": "Dockerfile",
       "context": "."
   },
-  "remoteUser": "taminaru"
+  "remoteUser": "taminaru",
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {}
+  }
 }
