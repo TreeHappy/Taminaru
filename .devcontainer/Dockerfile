@@ -1,30 +1,8 @@
 # syntax=docker/dockerfile:1
 
-# Build stage for Rust tools
-FROM alpine:latest AS builder
-
-RUN apk add --no-cache \
-    rust \
-    cargo \
-    musl-dev \
-    openssl-dev \
-    git
-
-# Build eza
-RUN git clone https://github.com/eza-community/eza && \
-    cd eza && \
-    cargo build --locked --release && \
-    mv target/release/eza /usr/local/bin
-
-# Build yazi
-RUN git clone https://github.com/sxyazi/yazi && \
-    cd yazi && \
-    cargo build --locked --release && \
-    mv target/release/yazi /usr/local/bin
-
-# Final stage
 FROM alpine:latest
 
+# Install system packages
 RUN apk add --no-cache \
     neovim \
     fzf \
@@ -32,10 +10,19 @@ RUN apk add --no-cache \
     direnv \
     git \
     bash \
-    curl
+    curl \
+    unzip
 
-COPY --from=builder /usr/local/bin/eza /usr/local/bin/
-COPY --from=builder /usr/local/bin/yazi /usr/local/bin/
+# Install eza from GitHub release
+RUN curl -LO https://github.com/eza-community/eza/releases/latest/download/eza-musl-x86_64.zip && \
+    unzip eza-musl-x86_64.zip -d /tmp/eza && \
+    mv /tmp/eza/bin/eza /usr/local/bin/ && \
+    rm -rf /tmp/eza eza-musl-x86_64.zip
+
+# Install yazi from GitHub release
+RUN curl -LO https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.tar.gz && \
+    tar -xzf yazi-x86_64-unknown-linux-musl.tar.gz -C /usr/local/bin && \
+    rm yazi-x86_64-unknown-linux-musl.tar.gz
 
 # Install starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
