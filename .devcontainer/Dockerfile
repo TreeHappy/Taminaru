@@ -1,7 +1,7 @@
 # Stage 1: Build tools
 FROM alpine:latest AS builder
 
-# Install necessary build tools and dependencies
+# Install necessary build tools and dependencies, including Go and Rust
 RUN apk add --no-cache \
     build-base \
     git \
@@ -12,17 +12,9 @@ RUN apk add --no-cache \
     cmake \
     pkgconfig \
     sqlite-dev \
-    libressl-dev
-
-# Install the latest version of Go
-RUN curl -sSL https://golang.org/dl/go1.20.5.linux-amd64.tar.gz | tar -C /usr/local -xz
-ENV PATH="/usr/local/go/bin:${PATH}"
-ENV GOPATH="/go"
-ENV PATH="${GOPATH}/bin:${PATH}"
-
-# Install the latest version of Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+    libressl-dev \
+    go \
+    rust
 
 # Set the working directory
 WORKDIR /workspace
