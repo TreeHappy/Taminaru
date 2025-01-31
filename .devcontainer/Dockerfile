@@ -14,18 +14,18 @@ RUN apk add --no-cache \
     unzip
 
 # Install eza from GitHub release
-RUN curl -LO https://github.com/eza-community/eza/releases/latest/download/eza-musl-x86_64.zip && \
-    unzip eza-musl-x86_64.zip -d /tmp/eza && \
+RUN curl -LOf https://github.com/eza-community/eza/releases/latest/download/eza-x86_64-unknown-linux-musl.zip && \
+    unzip eza-x86_64-unknown-linux-musl.zip -d /tmp/eza && \
     mv /tmp/eza/bin/eza /usr/local/bin/ && \
-    rm -rf /tmp/eza eza-musl-x86_64.zip
+    rm -rf /tmp/eza eza-x86_64-unknown-linux-musl.zip
 
 # Install yazi from GitHub release
-RUN curl -LO https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.tar.gz && \
-    tar -xzf yazi-x86_64-unknown-linux-musl.tar.gz -C /usr/local/bin && \
+RUN curl -LOf https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.tar.gz && \
+    tar -xzf yazi-x86_64-unknown-linux-musl.tar.gz -C /usr/local/bin yazi && \
     rm yazi-x86_64-unknown-linux-musl.tar.gz
 
 # Install starship
-RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
+RUN curl -fsS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
 
 # Create non-root user
 RUN adduser -D devuser && \
