@@ -13,18 +13,10 @@ RUN pacman -Sy --noconfirm --needed \
     curl \
     unzip \
     rust \
+    gum \
     cargo \
     openssl \
     && pacman -Scc --noconfirm
-
-# Install AUR packages (gum)
-RUN pacman -Sy --noconfirm --needed base-devel git && \
-    git clone https://aur.archlinux.org/gum-bin.git && \
-    cd gum-bin && \
-    makepkg -si --noconfirm --skippgpcheck && \
-    cd .. && \
-    rm -rf gum-bin && \
-    pacman -Rns --noconfirm git base-devel
 
 # Install Rust tools
 RUN cargo install --locked \
