@@ -1,12 +1,14 @@
 {
-  "name": "My Dev Container",
+  "name": "Neovim Dev Container",
   "build": {
-      "dockerfile": "Dockerfile",
-      "context": ".",
-      "args": {
-          "USERNAME": "taminaru"  // If you want to parameterize
-      }
+      "dockerfile": "Dockerfile"
   },
-  "remoteUser": "taminaru",
-  "workspaceFolder": "/workspace"
+  "remoteUser": "devuser",
+  "customizations": {
+      "vscode": {
+          "settings": {
+              "terminal.integrated.defaultProfile.linux": "bash"
+          }
+      }
+  }
 }

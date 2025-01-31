@@ -1,39 +1,50 @@
-# Stage 2: Create the final lightweight container
-FROM ubuntu:rolling
+# syntax=docker/dockerfile:1
 
-# Create the user first
-RUN useradd -m -s /bin/zsh taminaru && \
-    apt-get update && apt-get install -y --no-install-recommends \
+# Build stage for Rust tools
+FROM alpine:latest AS builder
+
+RUN apk add --no-cache \
+    rust \
+    cargo \
+    musl-dev \
+    openssl-dev \
+    git
+
+# Build eza
+RUN git clone https://github.com/eza-community/eza && \
+    cd eza && \
+    cargo build --locked --release && \
+    mv target/release/eza /usr/local/bin
+
+# Build yazi
+RUN git clone https://github.com/sxyazi/yazi && \
+    cd yazi && \
+    cargo build --locked --release && \
+    mv target/release/yazi /usr/local/bin
+
+# Final stage
+FROM alpine:latest
+
+RUN apk add --no-cache \
+    neovim \
     fzf \
-    bat \
-    zsh \
-    curl \
-    wget \
-    jq \
-    # Add Starship dependencies
-    fonts-powerline \
-    && rm -rf /var/lib/apt/lists/*
+    ripgrep \
+    direnv \
+    git \
+    bash \
+    curl
 
-# Install Starship (as root)
-RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
+COPY --from=builder /usr/local/bin/eza /usr/local/bin/
+COPY --from=builder /usr/local/bin/yazi /usr/local/bin/
 
-# Configure Starship for the user
-RUN echo '\n# Starship prompt\neval "$(starship init zsh)"' >> /home/taminaru/.zshrc && \
-    echo '\n# Enable cool prompt features\nstarship preset pastel-powerline > ~/.config/starship.toml' >> /home/taminaru/.zshrc
+# Install starship
+RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
 
-# Set up workspace ownership
-RUN mkdir -p /workspace && chown taminaru:taminaru /workspace
+# Create non-root user
+RUN adduser -D devuser && \
+    mkdir -p /home/devuser/.config && \
+    chown -R devuser:devuser /home/devuser
 
-# Switch to the user
-USER taminaru
-WORKDIR /workspace
-
-# Set default config for Starship
-RUN mkdir -p /home/taminaru/.config && \
-    starship preset pastel-powerline > /home/taminaru/.config/starship.toml
-
-# Copy the built tools from the builder stage
-# COPY --from=builder --chown=taminaru:taminaru /workspace/tool/tool /usr/local/bin/tool
-
-# Set the default shell to zsh
-CMD ["zsh"]
+USER devuser
+WORKDIR /home/devuser
+ENV SHELL=/bin/bash
