@@ -25,14 +25,9 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # Set the working directory
 WORKDIR /workspace
 
-# Build zellij
-RUN git clone --depth 1 https://github.com/zellij-org/zellij.git
-WORKDIR /workspace/zellij
-RUN cargo build --release
-
 # Build gum
-WORKDIR /workspace
 RUN git clone --depth 1 https://github.com/charmbracelet/gum.git
+WORKDIR /workspace/gum
 RUN go build -o gum ./cmd/gum
 
 # Build starship
@@ -75,13 +70,11 @@ RUN apk add --no-cache \
     curl \
     wget \
     jq \
-    zellij \
     starship \
     neovim \
     irssi
 
 # Copy the built tools from the builder stage
-COPY --from=builder /workspace/zellij/target/release/zellij /usr/local/bin/zellij
 COPY --from=builder /workspace/gum/gum /usr/local/bin/gum
 COPY --from=builder /root/.cargo/bin/starship /usr/local/bin/starship
 COPY --from=builder /workspace/cheat/cheat /usr/local/bin/cheat
@@ -90,7 +83,7 @@ COPY --from=builder /usr/local/bin/task /usr/local/bin/task
 COPY --from=builder /usr/local/bin/duckdb /usr/local/bin/duckdb
 
 # Set the entrypoint (optional)
-ENTRYPOINT ["/usr/local/bin/zellij"]
+ENTRYPOINT ["/usr/local/bin/gum"]
 
 # Optionally, you can expose ports or define other configurations
 # EXPOSE 8080
