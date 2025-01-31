@@ -3,7 +3,6 @@ FROM archlinux:base
 # Install core packages
 RUN pacman -Sy --noconfirm --needed \
     zsh \
-    starship \
     neovim \
     fzf \
     ripgrep \
@@ -27,13 +26,15 @@ RUN pacman -Sy --noconfirm --needed base-devel git && \
     rm -rf gum-bin && \
     pacman -Rns --noconfirm git base-devel
 
-# Install pre-built binaries
-RUN curl -fsSL https://pixi.sh/install.sh | bash -s -- -y && \
-    curl -L https://github.com/bensadeh/tailspin/releases/latest/download/tailspin-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin && \
-    curl -LO https://github.com/siriusmart/youtube-tui/releases/latest/download/yt-tui-x86_64-unknown-linux-gnu.zip && \
-    unzip yt-tui-x86_64-unknown-linux-gnu.zip -d /usr/local/bin && \
-    curl -LO https://github.com/Builditluc/wiki-tui/releases/latest/download/wiki-tui-x86_64-unknown-linux-gnu.tar.gz && \
-    tar -xzf wiki-tui-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin
+# Install Rust tools
+RUN cargo install --locked \
+    youtube-tui \
+    wiki-tui \
+    tailspin \
+    --root /usr/local
+
+# Install Starship
+RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
 
 # Create user
 RUN useradd -m -s /usr/bin/zsh devuser && \
@@ -49,10 +50,10 @@ RUN mkdir -p ~/.config && \
     zstyle ":completion:*" menu select' > ~/.zshrc && \
     echo "[character]\nsuccess_symbol = '[➜](bold green) '" > ~/.config/starship.toml
 
-ENV SHELL=/usr/bin/zsh \
-    PATH="/home/devuser/.pixi/bin:$PATH"
-
 # Cleanup
 USER root
 RUN rm -rf /var/cache/* /tmp/* /root/.cargo
 USER devuser
+
+# Start zsh
+CMD ["zsh", "-l"]
