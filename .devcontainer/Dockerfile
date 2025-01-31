@@ -1,6 +1,6 @@
 FROM archlinux:base
 
-# Minimal package installation with direct dependencies
+# Install core packages
 RUN pacman -Sy --noconfirm --needed \
     zsh \
     starship \
@@ -12,33 +12,47 @@ RUN pacman -Sy --noconfirm --needed \
     yazi \
     git \
     curl \
-    less \
-    man-db \
-    sudo \
-    && pacman -Scc --noconfirm  # Clean package cache
+    unzip \
+    rust \
+    cargo \
+    openssl \
+    && pacman -Scc --noconfirm
 
-# Remove unnecessary system components
-RUN rm -rf \
-    /usr/share/fonts/OTF \
-    /usr/share/fonts/TTF \
-    /usr/share/i18n \
-    /usr/share/zoneinfo/leap-seconds.list \
-    /usr/share/zoneinfo/right \
-    /var/cache/pacman/pkg/*
+# Install AUR packages (gum)
+RUN pacman -Sy --noconfirm --needed base-devel git && \
+    git clone https://aur.archlinux.org/gum-bin.git && \
+    cd gum-bin && \
+    makepkg -si --noconfirm --skippgpcheck && \
+    cd .. && \
+    rm -rf gum-bin && \
+    pacman -Rns --noconfirm git base-devel
 
-# Configure zsh as default shell
-RUN chsh -s /usr/bin/zsh && \
-    echo "export STARSHIP_CONFIG=~/.config/starship.toml" >> /etc/zsh/zshenv
+# Install pre-built binaries
+RUN curl -fsSL https://pixi.sh/install.sh | bash -s -- -y && \
+    curl -L https://github.com/bensadeh/tailspin/releases/latest/download/tailspin-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin && \
+    curl -LO https://github.com/siriusmart/youtube-tui/releases/latest/download/yt-tui-x86_64-unknown-linux-gnu.zip && \
+    unzip yt-tui-x86_64-unknown-linux-gnu.zip -d /usr/local/bin && \
+    curl -LO https://github.com/Builditluc/wiki-tui/releases/latest/download/wiki-tui-x86_64-unknown-linux-gnu.tar.gz && \
+    tar -xzf wiki-tui-x86_64-unknown-linux-gnu.tar.gz -C /usr/local/bin
 
-# Create minimal user environment
+# Create user
 RUN useradd -m -s /usr/bin/zsh devuser && \
     echo "devuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/devuser
 
+# Configure shell
 USER devuser
 WORKDIR /home/devuser
-
-# Minimal starship config
 RUN mkdir -p ~/.config && \
+    echo 'eval "$(starship init zsh)"\n\
+    export PATH="$HOME/.pixi/bin:$PATH"\n\
+    autoload -Uz compinit && compinit\n\
+    zstyle ":completion:*" menu select' > ~/.zshrc && \
     echo "[character]\nsuccess_symbol = '[➜](bold green) '" > ~/.config/starship.toml
 
-ENV SHELL=/usr/bin/zsh
+ENV SHELL=/usr/bin/zsh \
+    PATH="/home/devuser/.pixi/bin:$PATH"
+
+# Cleanup
+USER root
+RUN rm -rf /var/cache/* /tmp/* /root/.cargo
+USER devuser

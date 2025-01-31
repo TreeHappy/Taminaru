@@ -1,14 +1,16 @@
 {
-  "name": "Neovim Dev Container",
-  "build": {
-      "dockerfile": "Dockerfile"
-  },
-  "remoteUser": "devuser",
-  "customizations": {
-      "vscode": {
-          "settings": {
-              "terminal.integrated.defaultProfile.linux": "bash"
-          }
-      }
-  }
+    "name": "Arch Dev Container",
+    "image": "ghcr.io/your-username/arch-tui-stack:latest",
+    "remoteUser": "devuser",
+    "containerEnv": {
+        "SHELL": "/usr/bin/zsh"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.automationShell.linux": "zsh"
+            }
+        }
+    }
 }
