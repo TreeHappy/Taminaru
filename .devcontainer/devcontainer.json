@@ -2,7 +2,11 @@
   "name": "My Dev Container",
   "build": {
       "dockerfile": "Dockerfile",
-      "context": "."
+      "context": ".",
+      "args": {
+          "USERNAME": "taminaru"  // If you want to parameterize
+      }
   },
-  "remoteUser": "taminaru"
+  "remoteUser": "taminaru",
+  "workspaceFolder": "/workspace"
 }

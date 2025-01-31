@@ -1,30 +1,10 @@
-# Stage 1: Build tools
-FROM ubuntu:rolling AS builder
-
-# Install necessary build tools and dependencies, including Go and Rust
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    curl \
-    wget \
-    golang \
-    rustc \
-    cargo \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory
-WORKDIR /workspace
-
-# Example: Build a command line tool (replace with actual tool)
-# RUN git clone --depth 1 https://github.com/example/tool.git
-# WORKDIR /workspace/tool
-# RUN go build -o tool ./cmd/tool
-
+# Dockerfile
 # Stage 2: Create the final lightweight container
 FROM ubuntu:rolling
 
-# Install additional command line tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Create the user first
+RUN useradd -m -s /bin/zsh taminaru && \
+    apt-get update && apt-get install -y --no-install-recommends \
     fzf \
     bat \
     zsh \
@@ -33,8 +13,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
+# Set up workspace ownership
+RUN mkdir -p /workspace && chown taminaru:taminaru /workspace
+
+# Switch to the user
+USER taminaru
+WORKDIR /workspace
+
 # Copy the built tools from the builder stage
-# COPY --from=builder /workspace/tool/tool /usr/local/bin/tool
+# COPY --from=builder --chown=taminaru:taminaru /workspace/tool/tool /usr/local/bin/tool
 
 # Set the default shell to zsh
 CMD ["zsh"]
