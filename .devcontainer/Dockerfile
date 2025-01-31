@@ -21,7 +21,7 @@ WORKDIR /workspace
 # RUN go build -o tool ./cmd/tool
 
 # Stage 2: Create the final lightweight container
-FROM ubuntu:chiseled
+FROM ubuntu:rolling
 
 # Install additional command line tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
