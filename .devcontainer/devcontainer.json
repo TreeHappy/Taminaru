@@ -6,6 +6,6 @@
   },
   "remoteUser": "taminaru",
   "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {}
+    "ghcr.io/cirolosapio/devcontainers-features/alpine-openssh:0": {}
   }
 }
