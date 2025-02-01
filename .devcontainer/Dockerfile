@@ -46,8 +46,8 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y zsh curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Starship
-RUN curl -sS https://starship.rs/install.sh | sh
+# Install Starship with --yes option
+RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 # Create user taminaru
 RUN useradd -m -s /bin/zsh taminaru
