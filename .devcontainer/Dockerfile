@@ -22,6 +22,13 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Neovim
+RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz z && \
+    sudo rm -rf /opt/nvimz && \
+    sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+
 # Install Go
 RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
@@ -62,13 +69,12 @@ WORKDIR /home/taminaru
 # Create .zshrc for the user
 RUN echo 'eval "$(starship init zsh)"' >> .zshrc && \
     echo 'export STARSHIP_CONFIG="$HOME/.config/starship.toml"' >> .zshrc && \
-    echo 'export EDITOR="vim"' >> .zshrc && \
+    echo 'export EDITOR="nvim"' >> .zshrc && \
     echo 'export TERM="xterm-256color"' >> .zshrc && \
     echo 'alias ll="ls -la"' >> .zshrc && \
     echo 'alias gs="git status"' >> .zshrc && \
     echo 'alias gp="git pull"' >> .zshrc && \
-    echo 'alias gc="git commit"' >> .zshrc && \
-    echo 'export PROMPT="%F{green}%n@%m%f %F{blue}%~%f %# "' >> .zshrc
+    echo 'alias gc="git commit"' >> .zshrc
 
 # Create the Starship configuration directory and file
 RUN mkdir -p ~/.config && \
