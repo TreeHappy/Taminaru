@@ -16,22 +16,9 @@ local tab_colors = {
 	"Fuchsia",
 	"Aqua",
 }
-
--- [README](~/.config/README.md)
--- local animal_emojis = {
--- 	"🐱", -- Cat Face
--- 	"🐸", -- Frog Face
--- 	"🦊", -- Fox Face
--- 	"🐹", -- Hamster
--- 	"🐭", -- Mouse Face
--- 	"🐰", -- Rabbit Face
--- 	"🐻", -- Bear Face
--- 	"🐼", -- Panda Face
--- 	"🐨", -- Koala
--- 	"🐯", -- Tiger Face
--- 	"🦁", -- Lion Face
--- 	"🐶", -- Dog Face
--- }
+-- Generate a random seed on boot
+local random_seed = os.time()
+math.randomseed(random_seed)
 
 local animal_emojis = {
 	"🐶",
@@ -204,9 +191,9 @@ local emotion_emojis = {
 	"😠",
 }
 
-local function get_random_emoticon_and_animal()
-	-- Define the lists of emojis for emotions and animals
-	-- Generate a random index for the emotion and animal emojis
+local function get_random_emoticon_and_animal(seed)
+	-- Use the provided seed to generate a random index for the emotion and animal emojis
+	math.randomseed(seed)
 	local emotion_index = math.random(1, #emotion_emojis)
 	local animal_index = math.random(1, #animal_emojis)
 
@@ -250,29 +237,32 @@ config.window_padding = {
 
 wezterm.on("format-tab-title", function(tab)
 	if tab.is_active then
+		local unique_index = (tab.tab_index or 0) + random_seed
+		local random_emoticon_and_animal = get_random_emoticon_and_animal(unique_index)
 		local accent = tab_colors[(tab.tab_index % #tab_colors) + 1]
-		local animal = get_random_emoticon_and_animal() -- animal_emojis[(tab.tab_index % #animal_emojis) + 1]
 		return wezterm.format({
 			{ Background = { Color = tab_bg } },
 			{ Foreground = { AnsiColor = accent } },
 			{ Text = wezterm.nerdfonts.ple_left_half_circle_thick },
 			{ Background = { AnsiColor = accent } },
 			{ Foreground = { Color = tab_bg } },
-			{ Text = " " .. animal .. " " },
+			{ Text = " " .. random_emoticon_and_animal .. " " },
 			{ Background = { Color = tab_bg } },
 			{ Foreground = { AnsiColor = accent } },
 			{ Text = wezterm.nerdfonts.ple_right_half_circle_thick },
 		})
 	else
 		local accent = "Grey"
-		local animal = animal_emojis[(tab.tab_index % #animal_emojis) + 1]
+		local unique_index = (tab.tab_index or 0) + random_seed
+		local random_emoticon_and_animal = get_random_emoticon_and_animal(unique_index)
+
 		return wezterm.format({
 			{ Background = { Color = tab_bg } },
 			{ Foreground = { AnsiColor = accent } },
 			{ Text = wezterm.nerdfonts.ple_left_half_circle_thick },
 			{ Background = { AnsiColor = accent } },
 			{ Foreground = { Color = tab_bg } },
-			{ Text = animal },
+			{ Text = random_emoticon_and_animal },
 			{ Background = { Color = tab_bg } },
 			{ Foreground = { AnsiColor = accent } },
 			{ Text = wezterm.nerdfonts.ple_right_half_circle_thick },
