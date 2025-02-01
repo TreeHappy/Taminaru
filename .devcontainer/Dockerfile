@@ -22,9 +22,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a user and set up home directory
-RUN useradd -m taminaru
-
 # Install Go
 RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
@@ -49,12 +46,6 @@ RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.t
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
-
-# Switch to the new user
-USER taminaru
-
-# Set the working directory
-WORKDIR /home/taminaru
 
 # Create .zshrc for the user
 RUN echo 'eval "$(starship init zsh)"' >> .zshrc && \
@@ -81,8 +72,17 @@ RUN mkdir -p ~/.config && \
     echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
     echo 'style = "bold blue"' >> ~/.config/starship.toml
 
+# Create a user and set up home directory
+RUN useradd -m taminaru
+
 # Set the default shell to Zsh
 RUN usermod -s $(which zsh) taminaru
+
+# Switch to the new user
+USER taminaru
+
+# Set the working directory
+WORKDIR /home/taminaru
 
 # Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]
