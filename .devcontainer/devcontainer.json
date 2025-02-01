@@ -14,5 +14,8 @@
                 "terminal.integrated.automationShell.linux": "zsh"
             }
         }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/sshd:1": {}
     }
 }
