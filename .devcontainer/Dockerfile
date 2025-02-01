@@ -79,10 +79,3 @@ RUN mkdir -p ~/.config && \
     echo 'style = "bold yellow"' >> ~/.config/starship.toml && \
     echo '[time]' >> ~/.config/starship.toml && \
     echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
-    echo 'style = "bold blue"' >> ~/.config/starship.toml
-
-# Set the default shell to Zsh
-RUN chsh -s $(which zsh)
-
-# Set the entrypoint to Zsh
-ENTRYPOINT ["/usr/bin/zsh"]
