@@ -34,6 +34,7 @@ RUN wget https://ziglang.org/download/index.json -O zig.json && \
     ZIG_VERSION=$(jq -r '.["0.11.0"]."x86_64-linux"."tarball"' zig.json) && \
     wget $ZIG_VERSION && \
     tar -xvf zig-linux-x86_64-*.tar.xz && \
+    mkdir -p /usr/local/zig && \
     mv zig-linux-x86_64-* /usr/local/zig && \
     rm zig-linux-x86_64-*.tar.xz zig.json
 
@@ -50,7 +51,7 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 # Create user taminaru
 RUN useradd -m -s /bin/zsh taminaru
 
-# Copy Zig from the builder stage
+# Copy Go, Rust, and Zig from the builder stage
 COPY --from=builder /usr/local/go /usr/local/go
 COPY --from=builder /root/.cargo /root/.cargo
 COPY --from=builder /usr/local/zig /usr/local/zig
