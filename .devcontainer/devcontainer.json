@@ -3,7 +3,7 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
-    "remoteUser": "devuser",
+    "remoteUser": "taminaru",
     "containerEnv": {
         "SHELL": "/usr/bin/zsh"
     },

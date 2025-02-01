@@ -1,67 +1,73 @@
-# Build stage - Nix for dependency resolution
-FROM nixos/nix AS builder
+# Stage 1: Build environment
+FROM ubuntu:latest AS builder
 
-# Install all tools in single Nix profile
-RUN nix-env -iA \
-    nixpkgs.zsh \
-    nixpkgs.neovim \
-    nixpkgs.fzf \
-    nixpkgs.ripgrep \
-    nixpkgs.eza \
-    nixpkgs.direnv \
-    nixpkgs.yazi \
-    nixpkgs.git \
-    nixpkgs.starship \
-    nixpkgs.gum \
-    nixpkgs.youtube-tui \
-    nixpkgs.wiki-tui \
-    nixpkgs.tailspin \
-    --arg config '{ allowUnfree = true; }'
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Create closure of runtime dependencies only
-RUN nix-collect-garbage -d
+# Update package lists and install necessary tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    wget \
+    lsb-release \
+    software-properties-common \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Final stage - minimal runtime
-FROM scratch
+# Install Go
+RUN wget https://golang.org/dl/go1.20.5.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz && \
+    rm go1.20.5.linux-amd64.tar.gz
 
-# Copy Nix store and profile
-COPY --from=builder /nix /nix
-COPY --from=builder /etc/profiles/per-user/root /etc/profiles
+# Set Go environment variables
+ENV PATH=$PATH:/usr/local/go/bin
 
-# Base environment
-ENV PATH="/etc/profiles/bin:/nix/var/nix/profiles/default/bin:/nix/var/nix/profiles/default/sbin" \
-    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
-    USER=devuser \
-    HOME=/home/devuser
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    rm -rf ~/.cargo/.git && \
+    rm -rf ~/.rustup/.git
 
-# Create minimal filesystem structure
-RUN <<EOF
-#!/bin/sh
-mkdir -p /home/devuser /etc/ssl/certs
-EOF
+# Set Rust environment variables
+ENV PATH=$PATH:/root/.cargo/bin
 
-# Copy certificates
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+# Install Zig
+RUN wget https://ziglang.org/download/index.json -O zig.json && \
+    ZIG_VERSION=$(jq -r '.["0.11.0"]."x86_64-linux"."tarball"' zig.json) && \
+    wget $ZIG_VERSION && \
+    tar -xvf zig-linux-x86_64-*.tar.xz && \
+    mv zig-linux-x86_64-* /usr/local/zig && \
+    rm zig-linux-x86_64-*.tar.xz zig.json
 
-# Create user (no glibc useradd - static busybox version)
-RUN <<EOF
-#!/bin/sh
-echo 'devuser:x:1000:1000::/home/devuser:/bin/zsh' >> /etc/passwd
-echo 'devuser:x:1000:' >> /etc/group
-mkdir -p /home/devuser
-chown 1000:1000 /home/devuser
-EOF
+# Stage 2: Final image
+FROM ubuntu:latest
 
-# Configure zsh
-USER devuser
-WORKDIR /home/devuser
-RUN <<EOF
-#!/bin/sh
-echo 'eval "\$(starship init zsh)"' > .zshrc
-mkdir -p .config
-echo '[character]' > .config/starship.toml
-echo 'success_symbol = "[➜](bold green) "' >> .config/starship.toml
-EOF
+# Install Zsh and other dependencies
+RUN apt-get update && apt-get install -y zsh curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Default command
-CMD ["zsh", "-l"]
+# Install Starship
+RUN curl -sS https://starship.rs/install.sh | sh
+
+# Create user taminaru
+RUN useradd -m -s /bin/zsh taminaru
+
+# Copy Go, Rust, and Zig from the builder stage
+COPY --from=builder /usr/local/go /usr/local/go
+COPY --from=builder /root/.cargo /root/.cargo
+COPY --from=builder /usr/local/zig /usr/local/zig
+
+# Set environment variables for the final image
+ENV PATH=$PATH:/usr/local/go/bin:/root/.cargo/bin:/usr/local/zig:/home/taminaru/.cargo/bin
+
+# Configure Starship in .zshrc for the new user
+RUN echo 'eval "$(starship init zsh)"' >> /home/taminaru/.zshrc
+
+# Set the working directory
+WORKDIR /app
+
+# Switch to the new user
+USER taminaru
+
+# Start Zsh by default
+CMD ["zsh"]
