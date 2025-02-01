@@ -18,20 +18,204 @@ local tab_colors = {
 }
 
 -- [README](~/.config/README.md)
+-- local animal_emojis = {
+-- 	"🐱", -- Cat Face
+-- 	"🐸", -- Frog Face
+-- 	"🦊", -- Fox Face
+-- 	"🐹", -- Hamster
+-- 	"🐭", -- Mouse Face
+-- 	"🐰", -- Rabbit Face
+-- 	"🐻", -- Bear Face
+-- 	"🐼", -- Panda Face
+-- 	"🐨", -- Koala
+-- 	"🐯", -- Tiger Face
+-- 	"🦁", -- Lion Face
+-- 	"🐶", -- Dog Face
+-- }
+
 local animal_emojis = {
-	"🐱", -- Cat Face
-	"🐸", -- Frog Face
-	"🦊", -- Fox Face
-	"🐹", -- Hamster
-	"🐭", -- Mouse Face
-	"🐰", -- Rabbit Face
-	"🐻", -- Bear Face
-	"🐼", -- Panda Face
-	"🐨", -- Koala
-	"🐯", -- Tiger Face
-	"🦁", -- Lion Face
-	"🐶", -- Dog Face
+	"🐶",
+	"🐱",
+	"🐭",
+	"🐹",
+	"🐰",
+	"🦊",
+	"🐻",
+	"🐼",
+	"🐨",
+	"🐯",
+	"🦁",
+	"🐮",
+	"🐷",
+	"🐸",
+	"🐵",
+	"🙈",
+	"🙉",
+	"🙊",
+	"🐒",
+	"🐔",
+	"🐧",
+	"🐦",
+	"🐤",
+	"🐣",
+	"🐥",
+	"🦆",
+	"🦅",
+	"🦉",
+	"🦜",
+	"🐓",
+	"🦃",
+	"🐢",
+	"🐍",
+	"🦎",
+	"🦖",
+	"🦕",
+	"🐙",
+	"🦑",
+	"🦐",
+	"🦞",
+	"🦀",
+	"🐡",
+	"🐠",
+	"🐟",
+	"🐬",
+	"🐳",
+	"🐋",
+	"🦈",
+	"🐌",
+	"🐛",
+	"🦋",
+	"🐜",
+	"🐝",
+	"🐞",
+	"🦗",
+	"🕷️",
+	"🕸️",
+	"🦂",
+	"🦟",
+	"🦠",
+	"🐘",
+	"🦏",
+	"🦍",
+	"🐪",
+	"🐫",
+	"🦒",
+	"🦓",
+	"🦓",
+	"🐃",
+	"🐅",
+	"🐎",
+	"🐖",
+	"🐏",
+	"🐑",
+	"🐐",
+	"🦌",
+	"🐕",
+	"🐩",
+	"🐈",
+	"🐓",
+	"🦃",
+	"🕊️",
+	"🐇",
+	"🦝",
+	"🦔",
+	"🦦",
+	"🦥",
+	"🦨",
+	"🦡",
+	"🦫",
+	"🐁",
+	"🐀",
+	"🐿️",
+	"🦔",
+	"🐾",
 }
+
+local emotion_emojis = {
+	"😀",
+	"😃",
+	"😄",
+	"😁",
+	"😆",
+	"😅",
+	"😂",
+	"🤣",
+	"😇",
+	"😊",
+	"😋",
+	"😌",
+	"😍",
+	"🥰",
+	"😘",
+	"😗",
+	"😙",
+	"😚",
+	"☺️",
+	"🙂",
+	"🤗",
+	"🤩",
+	"🤔",
+	"🤨",
+	"😐",
+	"😑",
+	"😶",
+	"🙄",
+	"😏",
+	"😣",
+	"😥",
+	"😮",
+	"🤐",
+	"😯",
+	"😪",
+	"😫",
+	"😴",
+	"😌",
+	"😛",
+	"😜",
+	"😝",
+	"🤤",
+	"😒",
+	"😓",
+	"😔",
+	"😕",
+	"🙃",
+	"🤑",
+	"😲",
+	"☹️",
+	"🙁",
+	"😖",
+	"😞",
+	"😟",
+	"😤",
+	"😢",
+	"😭",
+	"😦",
+	"😧",
+	"😨",
+	"😩",
+	"🤯",
+	"😬",
+	"😰",
+	"😱",
+	"😳",
+	"🤪",
+	"😵",
+	"😡",
+	"😠",
+}
+
+local function get_random_emoticon_and_animal()
+	-- Define the lists of emojis for emotions and animals
+	-- Generate a random index for the emotion and animal emojis
+	local emotion_index = math.random(1, #emotion_emojis)
+	local animal_index = math.random(1, #animal_emojis)
+
+	-- Combine the emotion and animal emojis into a string
+	local result = emotion_emojis[emotion_index] .. animal_emojis[animal_index]
+
+	-- Return the result
+	return result
+end
 
 config.window_decorations = "NONE | RESIZE"
 config.default_prog = { "pwsh.exe", "-NoLogo" }
@@ -67,7 +251,7 @@ config.window_padding = {
 wezterm.on("format-tab-title", function(tab)
 	if tab.is_active then
 		local accent = tab_colors[(tab.tab_index % #tab_colors) + 1]
-		local animal = animal_emojis[(tab.tab_index % #animal_emojis) + 1]
+		local animal = get_random_emoticon_and_animal() -- animal_emojis[(tab.tab_index % #animal_emojis) + 1]
 		return wezterm.format({
 			{ Background = { Color = tab_bg } },
 			{ Foreground = { AnsiColor = accent } },
