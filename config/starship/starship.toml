@@ -17,20 +17,20 @@ ssh_only = true
 format = "[@$hostname](bold green)"
 [directory]
 style = "bold green"
-format = "[$path]($style)"
+format = "[$path]($style) "
 truncation_length = 3
 truncation_symbol = "…/"
 [git_status]
 conflicted = "💣"
-ahead = "🏎️💨"
-behind = "📬"
+ahead = "📤"
+behind = "📥"
 diverged = "😵"
 untracked = "🤷"
 stashed = "📦"
 modified = "✏️ "
-staged = '[++$$count$](green)'
-renamed = "👅"
-deleted = "🗑️"
+staged = "📦"
+renamed = "🔄"
+deleted = "🗑️ "
 style = "bold red"
 [docker_context]
 symbol = " 🐳 "
