@@ -5,7 +5,7 @@ param (
 
 Import-Module -Name $PSScriptRoot/winget.psm1 -Force
 
-function UpdateAllPakages($packages)
+function CheckAllPakages($packages)
 {
   foreach ($package in $packages)
   {
@@ -23,5 +23,5 @@ function UpdateAllPakages($packages)
   }
 }
 
-UpdateAllPakages(ListPackages(GetJsonObject($PackagesFile)))
+CheckAllPakages(ListPackages(GetJsonObject($PackagesFile)))
 
