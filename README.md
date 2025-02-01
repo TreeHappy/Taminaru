@@ -1,1 +1,1 @@
-![termi](images/terminal.png =300x200)
+![termi width="30"](images/terminal.png)
