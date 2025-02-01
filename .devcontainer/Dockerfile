@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     lsb-release \
     software-properties-common \
+    jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -27,9 +28,6 @@ ENV PATH=$PATH:/usr/local/go/bin
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     rm -rf ~/.cargo/.git && \
     rm -rf ~/.rustup/.git
-
-# Set Rust environment variables
-ENV PATH=$PATH:/root/.cargo/bin
 
 # Install Zig
 RUN wget https://ziglang.org/download/index.json -O zig.json && \
@@ -52,7 +50,7 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 # Create user taminaru
 RUN useradd -m -s /bin/zsh taminaru
 
-# Copy Go, Rust, and Zig from the builder stage
+# Copy Zig from the builder stage
 COPY --from=builder /usr/local/go /usr/local/go
 COPY --from=builder /root/.cargo /root/.cargo
 COPY --from=builder /usr/local/zig /usr/local/zig
