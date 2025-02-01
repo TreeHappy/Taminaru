@@ -59,6 +59,35 @@ ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
+# Remove language support packages
+RUN apt-get update && \
+    apt-get purge -y language-pack-* && \
+    rm -rf /var/lib/apt/lists/*
+
+# Remove unused desktop environments and window managers
+RUN apt-get update && \
+    apt-get purge -y ubuntu-desktop && \
+    rm -rf /var/lib/apt/lists/*
+
+# Remove unused applications and packages
+RUN apt-get update && \
+    apt-get purge -y $(dpkg --get-selections | grep -v deinstall | awk '{print $1}') && \
+    rm -rf /var/lib/apt/lists/*
+
+# Remove unnecessary kernel images and headers
+RUN apt-get update && \
+    apt-get purge -y $(dpkg --list | grep linux-image | awk '{print $2}' | grep -v -E '(uname -r)') && \
+    apt-get purge -y $(dpkg --list | grep linux-headers | awk '{print $2}' | grep -v -E '(uname -r)') && \
+    rm -rf /var/lib/apt/lists/*
+
+# Remove unnecessary documentation and man pages
+RUN apt-get update && \
+    apt-get remove --purge -y $(dpkg -l | awk '/^ii/ { print $2 }' | grep -E -v 'man|doc') && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clean up the package cache
+RUN apt-get clean
+
 # Create a user and set up home directory
 RUN useradd -m taminaru && \
     usermod -aG sudo taminaru
