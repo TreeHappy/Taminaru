@@ -46,6 +46,16 @@ RUN wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c
     mv zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41/zig /usr/local/bin/ && \
     rm -rf zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41
 
+# Install Neovim
+RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
+if [ $? -ne 0 ]; then echo "Failed to download Neovim"; exit 1; fi && \
+rm -rf /opt/nvim && \
+tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
+rm nvim-linux-x86_64.tar.gz
+
+# Set Neovim in PATH
+ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
@@ -85,16 +95,6 @@ RUN mkdir -p ~/.config && \
     echo '[time]' >> ~/.config/starship.toml && \
     echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
     echo 'style = "bold blue"' >> ~/.config/starship.toml
-
-# Install Neovim
-RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
-    if [ $? -ne 0 ]; then echo "Failed to download Neovim"; exit 1; fi && \
-    rm -rf /opt/nvim && \
-    tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
-    rm nvim-linux-x86_64.tar.gz
-
-# Set Neovim in PATH
-ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]
