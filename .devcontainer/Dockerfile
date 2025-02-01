@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG GO_VERSION=1.20.5
 ARG RUST_VERSION=1.70.0  # Update this to the desired Rust version
 ARG ZIG_VERSION=0.14.0    # Zig version to install
+ARG NEOVIM_VERSION=nightly # Change this to a specific version if needed
 
 # Update package lists and install necessary tools
 RUN apt-get update && apt-get install -y \
@@ -19,15 +20,9 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     jq \
     zsh \
+    sudo \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Neovim
-RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz z && \
-    sudo rm -rf /opt/nvimz && \
-    sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-
-export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # Install Go
 RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
@@ -45,17 +40,18 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
 # Add Cargo to PATH
 ENV PATH="$HOME/.cargo/bin:$PATH"
 
-# Install Zig from the specified link
-RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz && \
-    tar -xvf zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz && \
-    mv zig-linux-x86_64-0.14.0-dev.3011+e4c049e41/zig /usr/local/bin/ && \
-    rm -rf zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz zig-linux-x86_64-0.14.0-dev.3011+e4c049e41
+# Install Zig
+RUN wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz && \
+    tar -xvf zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz && \
+    mv zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41/zig /usr/local/bin/ && \
+    rm -rf zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 # Create a user and set up home directory
-RUN useradd -m taminaru
+RUN useradd -m taminaru && \
+    usermod -aG sudo taminaru
 
 # Set the default shell to Zsh
 RUN usermod -s $(which zsh) taminaru
@@ -89,6 +85,15 @@ RUN mkdir -p ~/.config && \
     echo '[time]' >> ~/.config/starship.toml && \
     echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
     echo 'style = "bold blue"' >> ~/.config/starship.toml
+
+# Install Neovim
+RUN curl -LO https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
+    rm -rf /opt/nvim && \
+    tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
+    rm nvim-linux-x86_64.tar.gz
+
+# Set Neovim in PATH
+ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]
