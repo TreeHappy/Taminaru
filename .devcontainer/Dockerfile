@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Define versions as variables
 ARG GO_VERSION=1.20.5
 ARG RUST_VERSION=1.70.0  # Update this to the desired Rust version
-ARG ZIG_VERSION=0.11.0    # Update this to the desired Zig version
+ARG ZIG_VERSION=0.14.0    # Zig version to install
 
 # Update package lists and install necessary tools
 RUN apt-get update && apt-get install -y \
@@ -38,12 +38,14 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     rm -rf ~/.cargo/.git && \
     rm -rf ~/.rustup/.git
 
-# Install Zig
-RUN wget https://ziglang.org/download/index.json -O zig.json && \
-    ZIG_TARBALL=$(jq -r '.["'"${ZIG_VERSION}"'"]."x86_64-linux"."tarball"' zig.json) && \
-    wget "$ZIG_TARBALL" && \
-    tar -xzf "$(basename "$ZIG_TARBALL")" && \
-    rm zig.json "$(basename "$ZIG_TARBALL")"
+# Add Cargo to PATH
+ENV PATH="$HOME/.cargo/bin:$PATH"
+
+# Install Zig from the specified link
+RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz && \
+    tar -xvf zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz && \
+    mv zig-linux-x86_64-0.14.0-dev.3011+e4c049e41/zig /usr/local/bin/ && \
+    rm -rf zig-linux-x86_64-0.14.0-dev.3011+e4c049e41.tar.xz zig-linux-x86_64-0.14.0-dev.3011+e4c049e41
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
