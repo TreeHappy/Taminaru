@@ -87,7 +87,8 @@ RUN mkdir -p ~/.config && \
     echo 'style = "bold blue"' >> ~/.config/starship.toml
 
 # Install Neovim
-RUN curl -LO https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
+RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
+    if [ $? -ne 0 ]; then echo "Failed to download Neovim"; exit 1; fi && \
     rm -rf /opt/nvim && \
     tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
     rm nvim-linux-x86_64.tar.gz
