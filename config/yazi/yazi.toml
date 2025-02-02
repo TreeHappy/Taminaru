@@ -7,3 +7,4 @@ edit = [
 	{ run = '$EDITOR "$@"', block = true, for = "unix" },
 	{ run = "%EDITOR% %*",  block = true, for = "windows" },
 ]
+

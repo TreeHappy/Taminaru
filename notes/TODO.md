@@ -1,3 +1,4 @@
+
 # TODO
 
 * [] dotted indention lines!
@@ -9,4 +10,5 @@
   * chezmoi ?
 * switch from winget to scoop or chocolatey
 * lualine with rounded corners as here [lualine config](https://github.com/Penguin-jpg/nvim-config/blob/main/lua/plugins/ui/lualine.lua)
+* zoxide setup
 
