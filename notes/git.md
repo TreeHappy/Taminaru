@@ -20,3 +20,10 @@ Difftastic is a structural diff tool that compares files based on their syntax.
 
 * [Husky.net](https://github.com/alirezanet/husky.net)
 
+## Rebasing
+
+* Learn rebasing properly
+* Setup tool chain
+
+[[todo]]
+
