@@ -12,3 +12,11 @@ Difftastic is a structural diff tool that compares files based on their syntax.
 
 [Difftastic](https://github.com/Wilfred/difftastic)
 
+## Commit Tool
+
+* [Meteor](https://github.com/stefanlogue/meteor)
+
+## Commit Hooks
+
+* [Husky.net](https://github.com/alirezanet/husky.net)
+
