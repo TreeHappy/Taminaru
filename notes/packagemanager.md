@@ -18,5 +18,13 @@ There are three possible options for package managers under windows.
 
 ## Scoop
 
+### Pros
+
+### Cons
+
 ## Chocolatey
+
+### Pros
+
+### Cons
 

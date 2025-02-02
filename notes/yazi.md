@@ -5,3 +5,6 @@
 
 ### Themes
 
+# Tags
+
+[[tags#Filemanager]]
