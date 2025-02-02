@@ -60,6 +60,7 @@ ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 # Create a user and set up home directory
+# TODO: user needs a password
 RUN useradd -m taminaru && \
     usermod -aG sudo taminaru
 
