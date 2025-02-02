@@ -7,5 +7,5 @@ I want to be able to select workloads and install the binaries on the box i am o
 
 # Tags
 
-[[tags#Configurations]]
+[[tags#Configuration]]
 
