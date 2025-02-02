@@ -1,5 +1,5 @@
 # Stage 1: Build environment
-FROM ubuntu:latest AS builder
+FROM ubuntu:plucky AS builder
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -74,3 +74,4 @@ RUN mkdir -p ~/.config && \
 
 # Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]
+

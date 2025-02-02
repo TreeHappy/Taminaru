@@ -1,5 +1,5 @@
 # Stage 1: Build environment
-FROM ubuntu:latest AS builder
+FROM ubuntu:devel AS builder
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
