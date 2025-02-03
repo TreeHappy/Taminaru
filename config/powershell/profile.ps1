@@ -28,3 +28,5 @@ Set-Alias zoxide zoxide.exe
 Set-Alias git git.exe
 Set-Alias docker docker.exe
 Set-Alias chezmoi chezmoi.exe
+Set-Alias y yazi.exe
+
