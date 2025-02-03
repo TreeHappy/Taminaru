@@ -1,3 +1,5 @@
+# format = """$all"""
+
 [character]
 success_symbol = "[ 🎏](bold green)"
 error_symbol = "[ 👹](bold red)"
@@ -25,12 +27,12 @@ conflicted = "💣"
 ahead = "📤"
 behind = "📥"
 diverged = "😵"
-untracked = "🤷"
+untracked = "★"
 stashed = "📦"
-modified = "✏️ "
-staged = "📦"
-renamed = "🔄"
-deleted = "🗑️ "
+modified = ""
+staged = "✓"
+renamed = "🗘"
+deleted = ""
 style = "bold red"
 [docker_context]
 symbol = " 🐳 "
