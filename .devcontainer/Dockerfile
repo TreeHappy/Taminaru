@@ -57,7 +57,10 @@ rm nvim-linux-x86_64.tar.gz
 ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # Install moon
-RUN bash <(curl -fsSL https://moonrepo.dev/install/moon.sh)
+RUN curl -fsSL https://moonrepo.dev/install/moon.sh -o /tmp/moon.sh && \
+    chmod +x /tmp/moon.sh && \
+    bash /tmp/moon.sh && \
+    rm /tmp/moon.sh
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
