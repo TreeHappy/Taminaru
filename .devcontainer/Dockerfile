@@ -6,9 +6,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Define versions as variables
 ARG GO_VERSION=1.20.5
-ARG RUST_VERSION=1.70.0  # Update this to the desired Rust version
-ARG ZIG_VERSION=0.14.0    # Zig version to install
-ARG NEOVIM_VERSION=nightly # Change this to a specific version if needed
+ARG RUST_VERSION=1.70.0
+ARG ZIG_VERSION=0.14.0
+ARG NEOVIM_VERSION=nightly
+ARG PANDOC_VERSION=3.1.8
 
 # Update package lists and install necessary tools
 RUN apt-get update && apt-get install -y \
@@ -48,27 +49,35 @@ RUN wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c
 
 # Install Neovim
 RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
-if [ $? -ne 0 ]; then echo "Failed to download Neovim"; exit 1; fi && \
-rm -rf /opt/nvim && \
-tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
-rm nvim-linux-x86_64.tar.gz
+    tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
+    rm nvim-linux-x86_64.tar.gz
 
 # Set Neovim in PATH
 ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
-# Install moon
+# Install pandoc
+RUN wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz && \
+    tar -xzvf pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz && \
+    mv pandoc-${PANDOC_VERSION}/bin/pandoc /usr/local/bin/ && \
+    rm -rf pandoc-${PANDOC_VERSION}*
+
+# Install moon and verify installation
 RUN curl -fsSL https://moonrepo.dev/install/moon.sh -o /tmp/moon.sh && \
     chmod +x /tmp/moon.sh && \
     bash /tmp/moon.sh && \
-    rm /tmp/moon.sh
+    rm /tmp/moon.sh && \
+    # Verify moon is installed
+    ls -l /usr/local/bin/moon
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
-# Create a user and set up home directory
-# TODO: user needs a password
+# Create a user, set up sudo without password, and home directory
 RUN useradd -m taminaru && \
-    usermod -aG sudo taminaru
+    usermod -aG sudo taminaru && \
+    # Allow sudo without password
+    echo 'taminaru ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/taminaru && \
+    chmod 0440 /etc/sudoers.d/taminaru
 
 # Set the default shell to Zsh
 RUN usermod -s $(which zsh) taminaru
@@ -79,8 +88,9 @@ USER taminaru
 # Set the working directory
 WORKDIR /home/taminaru
 
-# Create .zshrc for the user
-RUN echo 'eval "$(starship init zsh)"' >> .zshrc && \
+# Create .zshrc for the user with PATH adjustments
+RUN echo 'export PATH=$PATH:/usr/local/bin' >> .zshrc && \
+    echo 'eval "$(starship init zsh)"' >> .zshrc && \
     echo 'export STARSHIP_CONFIG="$HOME/.config/starship.toml"' >> .zshrc && \
     echo 'export EDITOR="nvim"' >> .zshrc && \
     echo 'export TERM="xterm-256color"' >> .zshrc && \
@@ -89,7 +99,7 @@ RUN echo 'eval "$(starship init zsh)"' >> .zshrc && \
     echo 'alias gp="git pull"' >> .zshrc && \
     echo 'alias gc="git commit"' >> .zshrc
 
-# Create the Starship configuration directory and file
+# Create the Starship configuration
 RUN mkdir -p ~/.config && \
     echo '[character]' > ~/.config/starship.toml && \
     echo 'success_symbol = "[➜](bold green)"' >> ~/.config/starship.toml && \
@@ -103,5 +113,4 @@ RUN mkdir -p ~/.config && \
     echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
     echo 'style = "bold blue"' >> ~/.config/starship.toml
 
-# Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]
