@@ -29,10 +29,17 @@ behind = "📥"
 diverged = "😵"
 untracked = "★"
 stashed = "📦"
+<<<<<<< HEAD
+modified = "✏️ "
+staged = "📦"
+renamed = "🔄"
+deleted = "🗑️ "
+=======
 modified = ""
 staged = "✓"
 renamed = "🗘"
 deleted = ""
+>>>>>>> 74cc7081c76aeef27cd317b6874e5294d04a3957
 style = "bold red"
 [docker_context]
 symbol = " 🐳 "

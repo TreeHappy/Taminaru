@@ -3,34 +3,25 @@ param (
   [string]$PackagesFile
 )
 
-function ListPackages([string]$fileLocation)
-{
-  # Load the exported packages
-  $packagesJson = Get-Content -Raw -Path "$PackagesFile" | ConvertFrom-Json
+Import-Module -Name $PSScriptRoot/winget.psm1 -Force
 
-  $packagesJson
-}
-
-function UpdateAllPakages($packages)
+function CheckAllPakages($packages)
 {
-  # Check for updates for each package
   foreach ($package in $packages)
   {
     Write-Output "Checking update for $($package.PackageIdentifier)"
 
-    winget upgrade --id $package.PackageIdentifier --accept-source-agreements --silent | Out-Null
+    gum spin --spinner moon --title "Checking ..." -- winget upgrade --id $package.PackageIdentifier --accept-source-agreements --silent | Out-Null
 
     if ($?)
     {
-      Write-Output "$packageName has updates available."
+      Write-Output "  $($package.PackageIdentifier) has updates available."
     } else
     {
-      Write-Output "$packageName is up to date."
+      Write-Output "  $($package.PackageIdentifier) is up to date."
     }
   }
 }
 
-$packagesJson = ListPackages $PackagesFile
-$packages = $packagesJson.Sources.Packages
+CheckAllPakages(ListPackages(GetJsonObject($PackagesFile)))
 
-UpdateAllPakages($packages)

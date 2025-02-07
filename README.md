@@ -1,5 +1,7 @@
-
 <div>
-  <img src="images/screen.png" width="200" height="300" alt="Alt Text">
-  <img src="images/terminal.png" width="200" height="300" alt="Alt Text">
+  <img src="images/terminal.png" width="200" height="300"/>
+
+
+
+  <img src="images/currentscreen.png" width="500"/>
 </div>

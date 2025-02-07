@@ -1,100 +1,73 @@
 # Stage 1: Build environment
-FROM ubuntu:latest AS builder
+FROM ubuntu:devel AS builder
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    PATH="/usr/local/go/bin:/root/.cargo/bin:/usr/local/bin:$PATH"
 
-# Define versions as variables
 ARG GO_VERSION=1.20.5
-ARG RUST_VERSION=1.70.0  # Update this to the desired Rust version
-ARG ZIG_VERSION=0.14.0    # Zig version to install
-ARG NEOVIM_VERSION=nightly # Change this to a specific version if needed
+ARG RUST_VERSION=1.70.0
+ARG ZIG_VERSION=0.14.0
+ARG NEOVIM_VERSION=nightly
 
-# Update package lists and install necessary tools
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
-    wget \
-    lsb-release \
-    software-properties-common \
-    jq \
-    zsh \
-    sudo \
-    && apt-get clean \
+# Install system dependencies quietly
+RUN apt-get update -qq && apt-get install -yqq --no-install-recommends \
+    build-essential curl git wget lsb-release \
+    software-properties-common jq zsh sudo unzip \
+    && apt-get clean -qq \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Go
-RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
-    rm go${GO_VERSION}.linux-amd64.tar.gz
+# Install Go silently
+RUN wget -q https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz \
+    && rm -f go*.tar.gz
 
-# Set Go environment variables
-ENV PATH=$PATH:/usr/local/go/bin
+# Install Rust with quiet output
+RUN curl -sSf --proto '=https' --tlsv1.2 https://sh.rustup.rs | sh -s -- -y \
+    && . "$HOME/.cargo/env" \
+    && rustup default ${RUST_VERSION} -q \
+    && rustup --version \
+    && cargo --version
 
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-    rm -rf ~/.cargo/.git && \
-    rm -rf ~/.rustup/.git
+# Install Zig quietly
+RUN wget -q https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz \
+    && tar -xf zig-*.tar.xz \
+    && mv zig-*/zig /usr/local/bin/ \
+    && rm -rf zig-*
 
-# Add Cargo to PATH
-ENV PATH="$HOME/.cargo/bin:$PATH"
+# Install Neovim silently
+RUN curl -sSL -o nvim.tar.gz https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz \
+    && tar -C /opt -xzf nvim.tar.gz \
+    && ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
+    && rm -f nvim.tar.gz
 
-# Install Zig
-RUN wget https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz && \
-    tar -xvf zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz && \
-    mv zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41/zig /usr/local/bin/ && \
-    rm -rf zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41.tar.xz zig-linux-x86_64-${ZIG_VERSION}-dev.3011+e4c049e41
+# Install Moon via npm (quiet)
+RUN npm install -g @moonrepo/cli@latest --silent
 
-# Install Neovim
-RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz && \
-if [ $? -ne 0 ]; then echo "Failed to download Neovim"; exit 1; fi && \
-rm -rf /opt/nvim && \
-tar -C /opt -xzf nvim-linux-x86_64.tar.gz && \
-rm nvim-linux-x86_64.tar.gz
+# Install Pandoc quietly
+RUN PANDOC_URL=$(curl -s https://api.github.com/repos/jgm/pandoc/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" | cut -d '"' -f 4) \
+    && wget -q $PANDOC_URL \
+    && tar -xzf pandoc-*.tar.gz \
+    && mv pandoc-*/bin/pandoc /usr/local/bin/ \
+    && rm -rf pandoc-*
 
-# Set Neovim in PATH
-ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+# Install Starship silently
+RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes > /dev/null
 
-# Install Starship
-RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
+# Configure user
+RUN useradd -m taminaru \
+    && usermod -aG sudo taminaru \
+    && echo 'taminaru ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/taminaru \
+    && chmod 0440 /etc/sudoers.d/taminaru \
+    && usermod -s /usr/bin/zsh taminaru
 
-# Create a user and set up home directory
-RUN useradd -m taminaru && \
-    usermod -aG sudo taminaru
-
-# Set the default shell to Zsh
-RUN usermod -s $(which zsh) taminaru
-
-# Switch to the new user
 USER taminaru
-
-# Set the working directory
 WORKDIR /home/taminaru
 
-# Create .zshrc for the user
-RUN echo 'eval "$(starship init zsh)"' >> .zshrc && \
-    echo 'export STARSHIP_CONFIG="$HOME/.config/starship.toml"' >> .zshrc && \
-    echo 'export EDITOR="nvim"' >> .zshrc && \
-    echo 'export TERM="xterm-256color"' >> .zshrc && \
-    echo 'alias ll="ls -la"' >> .zshrc && \
-    echo 'alias gs="git status"' >> .zshrc && \
-    echo 'alias gp="git pull"' >> .zshrc && \
-    echo 'alias gc="git commit"' >> .zshrc
+# Configure shell
+RUN echo 'eval "$(starship init zsh)"' >> ~/.zshrc \
+    && echo 'export STARSHIP_CONFIG="$HOME/.config/starship.toml"' >> ~/.zshrc \
+    && echo 'export EDITOR="nvim"' >> ~/.zshrc \
+    && mkdir -p ~/.config \
+    && printf '[character]\nsuccess_symbol = "[➜](bold green)"\nerror_symbol = "[✗](bold red)"\n[directory]\nstyle = "cyan"\n[git_branch]\nsymbol = "🌿 "\nstyle = "bold yellow"\n[time]\nformat = "%%H:%%M:%%S"\nstyle = "bold blue"\n' > ~/.config/starship.toml
 
-# Create the Starship configuration directory and file
-RUN mkdir -p ~/.config && \
-    echo '[character]' > ~/.config/starship.toml && \
-    echo 'success_symbol = "[➜](bold green)"' >> ~/.config/starship.toml && \
-    echo 'error_symbol = "[✗](bold red)"' >> ~/.config/starship.toml && \
-    echo '[directory]' >> ~/.config/starship.toml && \
-    echo 'style = "cyan"' >> ~/.config/starship.toml && \
-    echo '[git_branch]' >> ~/.config/starship.toml && \
-    echo 'symbol = "🌿 "' >> ~/.config/starship.toml && \
-    echo 'style = "bold yellow"' >> ~/.config/starship.toml && \
-    echo '[time]' >> ~/.config/starship.toml && \
-    echo 'format = "%H:%M:%S"' >> ~/.config/starship.toml && \
-    echo 'style = "bold blue"' >> ~/.config/starship.toml
-
-# Set the entrypoint to Zsh
 ENTRYPOINT ["/usr/bin/zsh"]

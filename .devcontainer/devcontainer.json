@@ -12,7 +12,10 @@
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "zsh",
                 "terminal.integrated.automationShell.linux": "zsh"
-            }
+            },
+            "extensions": [
+                "Marlodev.ganbaru"
+            ]
         }
     },
     "features": {
