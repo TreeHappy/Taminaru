@@ -55,19 +55,15 @@ RUN curl -LO https://github.com/neovim/neovim/releases/download/${NEOVIM_VERSION
 # Set Neovim in PATH
 ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
-# Install pandoc
-RUN wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz && \
-    tar -xzvf pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz && \
-    mv pandoc-${PANDOC_VERSION}/bin/pandoc /usr/local/bin/ && \
-    rm -rf pandoc-${PANDOC_VERSION}*
-
-# Install moon and verify installation
+# Install moon
 RUN curl -fsSL https://moonrepo.dev/install/moon.sh -o /tmp/moon.sh && \
     chmod +x /tmp/moon.sh && \
     bash /tmp/moon.sh && \
     rm /tmp/moon.sh && \
-    # Verify moon is installed
-    ls -l /usr/local/bin/moon
+    # Verify moon is installed in the correct location
+    ls -l /root/.moon/bin/moon
+
+ENV PATH="/root/.moon/bin:$PATH"
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
