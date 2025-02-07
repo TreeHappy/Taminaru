@@ -56,6 +56,9 @@ rm nvim-linux-x86_64.tar.gz
 # Set Neovim in PATH
 ENV PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
+# Install moon
+bash <(curl -fsSL https://moonrepo.dev/install/moon.sh)
+
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
