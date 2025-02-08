@@ -16,7 +16,7 @@ return {
   { import = "astrocommunity.motion.mini-move" },
   { import = "astrocommunity.motion.marks-nvim" },
   -- { import = "astrocommunity.bars-and-lines.lualine-nvim" },
-  -- { import = "astrocommunity.colorscheme.oldworld-nvim" },
+  { import = "astrocommunity.colorscheme.oldworld-nvim" },
   -- { import = "astrocommunity.colorscheme.eldritch-nvim" },
   { import = "astrocommunity.colorscheme.oxocarbon-nvim" },
   { import = "astrocommunity.colorscheme.lackluster-nvim" },
@@ -33,4 +33,5 @@ return {
   -- { import = "astrocommunity.workflow.hardtime-nvim" },
   -- { import = "astrocommunity.workflow.bad-practices-nvim" },
   { import = "astrocommunity.neovim-lua-development.helpview-nvim" },
+  { import = "astrocommunity.completion.blink-cmp" },
 }
