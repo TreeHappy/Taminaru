@@ -28,3 +28,7 @@ There are three possible options for package managers under windows.
 
 ### Cons
 
+## mise-en-place
+
+* https://mise.jdx.dev/core-tools.html
+
