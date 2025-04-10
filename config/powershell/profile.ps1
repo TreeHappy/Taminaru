@@ -16,12 +16,6 @@ carapace _carapace | Out-String | Invoke-Expression
 
 Invoke-Expression (&starship init powershell)
 
-function rep
-{
-  . $PROFILE
-  Clear-Host
-}
-
 Set-Alias ls eza
 Set-Alias cat bat
 Set-Alias zoxide zoxide.exe
