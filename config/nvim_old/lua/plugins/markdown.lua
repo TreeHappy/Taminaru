@@ -2,9 +2,6 @@ return {
   {
     "render-markdown.nvim",
     opts = {
-      dash = {
-        icon = "⠉",
-      },
       indent = {
         enabled = false,
         per_level = 2,

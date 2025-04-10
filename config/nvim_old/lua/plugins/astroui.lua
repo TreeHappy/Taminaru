@@ -11,7 +11,12 @@ return {
   ---@type AstroUIOpts
   opts = {
     -- change colorscheme
-    colorscheme = "catppuccin",
+    -- colorscheme = "eldritch",
+    -- colorscheme = "lackluster",
+    -- colorscheme = "nightfox",
+    -- colorscheme = "oxocarbon",
+    -- colorscheme = "catppuccin",
+    colorscheme = "oldworld",
     -- AstroUI allows you to easily modify highlight groups easily for any and all colorschemes
     highlights = {
       init = { -- this table overrides highlights in all themes
@@ -34,6 +39,17 @@ return {
       LSPLoading8 = "⠧",
       LSPLoading9 = "⠇",
       LSPLoading10 = "⠏",
+      BufferClose = "󰺭",
+      GitAdd = "",
+      GitBranch = "🌿",
+      GitChange = "",
+      GitConflict = "💣",
+      GitDelete = "",
+      GitIgnored = "",
+      GitRenamed = "🗘",
+      GitStaged = "✓",
+      GitUnstaged = "✗",
+      GitUntracked = "★",
     },
   },
 }
