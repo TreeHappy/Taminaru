@@ -2,8 +2,8 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 local background_opacity = 0.5
 -- local background_opacity = 0.65
--- local tab_bg = "rgba(0,0,0,0)"
-local tab_bg = "#081632"
+local tab_bg = "rgba(0,0,0,0)"
+-- local tab_bg = "#081632"
 local tab_colors = {
 	"Navy",
 	"Red",
@@ -275,13 +275,16 @@ end)
 
 wezterm.on("update-status", function(window)
 	local color_scheme = window:effective_config().resolved_palette
-	-- local bg = "none"
+	local bg = color_scheme.background
 	local fg = color_scheme.foreground
 
 	window:set_right_status(wezterm.format({
-		-- { Background = { Color = bg } },
+		{ Background = { Color = tab_bg } },
+		{ Foreground = { Color = bg } },
+		{ Text = wezterm.nerdfonts.ple_left_half_circle_thick },
+		{ Background = { Color = bg } },
 		{ Foreground = { Color = fg } },
-		{ Text = " " .. os.date() .. " " },
+		{ Text = os.date() },
 	}))
 end)
 
