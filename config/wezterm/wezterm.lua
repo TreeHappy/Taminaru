@@ -1,7 +1,9 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
+local background_opacity = 0.5
 -- local background_opacity = 0.65
-local tab_bg = "rgba(0,0,0,0)"
+-- local tab_bg = "rgba(0,0,0,0)"
+local tab_bg = "#081632"
 local tab_colors = {
 	"Navy",
 	"Red",
@@ -205,9 +207,10 @@ local function get_random_emoticon_and_animal(seed)
 end
 
 config.window_decorations = "NONE | RESIZE"
-config.default_prog = { "pwsh.exe", "-NoLogo" }
--- config.window_background_opacity = background_opacity
--- config.window_background_image = "c:/Users/Nicolas/Pictures/blade-runner.jpg"
+config.default_prog = { "nu.exe" }
+-- config.default_prog = { "pwsh.exe", "-NoLogo" }
+config.window_background_opacity = background_opacity
+-- config.window_background_image = "c:/Users/Admin/Downloads/clockwork-golem-542676.gif"
 config.color_scheme = "Catppuccin Mocha (Gogh)"
 config.font_size = 12.0
 config.hide_tab_bar_if_only_one_tab = true
@@ -219,12 +222,12 @@ config.hide_tab_bar_if_only_one_tab = false
 config.default_cursor_style = "BlinkingBar"
 -- config.font = wezterm.font("Fira Code IF", { weight = "Light", italic = false })
 -- config.font = wezterm.font("JetBrains Mono", { italic = false })
--- config.font = wezterm.font("JetBrains Mono", { weight = "Bold", italic = false })
+config.font = wezterm.font("JetBrains Mono", { weight = "Bold", italic = false })
 
 config.colors = {
 	-- background = "black",
 	tab_bar = {
-		background = "rgba(0,0,0,0)",
+		background = tab_bg,
 	},
 }
 
@@ -272,13 +275,13 @@ end)
 
 wezterm.on("update-status", function(window)
 	local color_scheme = window:effective_config().resolved_palette
-	local bg = "none"
+	-- local bg = "none"
 	local fg = color_scheme.foreground
 
 	window:set_right_status(wezterm.format({
-		{ Background = { Color = bg } },
+		-- { Background = { Color = bg } },
 		{ Foreground = { Color = fg } },
-		{ Text = " " .. os.getenv("USERNAME") .. "@" .. wezterm.hostname() .. " " },
+		{ Text = " " .. os.date() .. " " },
 	}))
 end)
 
