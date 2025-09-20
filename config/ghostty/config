@@ -30,7 +30,7 @@ font-size = 8
 # window-padding-x = 2
 #
 theme = "Catppuccin Mocha"
-background-opacity = 0.9
+background-opacity = 1.0
 background-blur = 0
 # # Spacing around the equals sign does not matter.
 # # All of these are identical:
