@@ -1,0 +1,50 @@
+FROM alpine:latest
+
+# Install neovim and development tools
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache \
+    neovim \
+    neovim-doc \
+    git \
+    curl \
+    wget \
+    bash \
+    fzf \
+    ripgrep \
+    fd \
+    python3 \
+    py3-pip \
+    nodejs \
+    npm \
+    go \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    clang \
+    llvm \
+    openssh \
+    # Alpine package management tools
+    alpine-sdk \
+    # doas for sudo-like functionality
+    doas \
+    && rm -rf /var/cache/apk/*
+
+# Configure doas to allow root commands without password
+RUN echo "permit nopass :root" > /etc/doas.d/doas.conf && \
+    chmod 0400 /etc/doas.d/doas.conf
+
+# Install Python and Node.js neovim packages for plugin support
+RUN pip3 install --no-cache-dir pynvim && \
+    npm install -g neovim
+
+# Set working directory
+WORKDIR /workspace
+
+# Keep root user for full system access
+USER root
+
+# Set default command to bash
+CMD ["bash"]
+
