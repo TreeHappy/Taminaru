@@ -72,20 +72,6 @@ return {
           end,
           desc = "Close buffer from tabline",
         },
-        ["<Leader>fs"] = {
-          function() require("telescope").extensions.live_grep_args.live_grep_args() end,
-          desc = "Live Grep with args",
-          noremap = true,
-        },
-        ["<Leader>fb"] = {
-          function()
-            require("telescope.builtin").buffers {
-              initial_mode = "normal",
-            }
-          end,
-          desc = "Find buffers",
-          noremap = true,
-        },
 
         -- tables with just a `desc` key will be registered with which-key if it's installed
         -- this is useful for naming menus
