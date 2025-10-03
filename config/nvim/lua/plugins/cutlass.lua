@@ -1,7 +1,6 @@
-return {}
--- return {
---   "gbprod/cutlass.nvim",
---   opts = {
---     cut_key = "x",
---   },
--- }
+return {
+  "gbprod/cutlass.nvim",
+  opts = {
+    cut_key = "x",
+  },
+}
