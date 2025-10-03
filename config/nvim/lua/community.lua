@@ -12,4 +12,5 @@ return {
   { import = "astrocommunity.pack.markdown" },
   { import = "astrocommunity.file-explorer.fyler-nvim" },
   { import = "astrocommunity.diagnostics.lsp_lines-nvim" },
+  { import = "astrocommunity.utility.noice-nvim" },
 }
