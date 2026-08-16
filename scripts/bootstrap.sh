@@ -62,12 +62,30 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   fi
 
   SUDOERS="/etc/sudoers.d/$TAMINARU_USER"
-  if [ ! -f "$SUDOERS" ] || ! grep -qE "^$TAMINARU_USER[[:space:]]" "$SUDOERS"; then
-    log "🔒 Ensuring $TAMINARU_USER has passwordless sudo..."
-    printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TAMINARU_USER" > "$SUDOERS"
-    chmod 440 "$SUDOERS"
-    visudo -cf "$SUDOERS"
+  log "🔒 Ensuring $TAMINARU_USER has passwordless sudo..."
+  printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TAMINARU_USER" > "$SUDOERS"
+  chmod 440 "$SUDOERS"
+  visudo -cf "$SUDOERS"
+
+  if ! grep -qE '^[#@]includedir[[:space:]]+/etc/sudoers\.d' /etc/sudoers 2>/dev/null; then
+    SUDOERS_TMP="$(mktemp /etc/sudoers.XXXXXX)"
+    cat /etc/sudoers > "$SUDOERS_TMP"
+    printf '\n@includedir /etc/sudoers.d\n' >> "$SUDOERS_TMP"
+    if visudo -cf "$SUDOERS_TMP" >/dev/null 2>&1; then
+      install -m 0440 "$SUDOERS_TMP" /etc/sudoers
+      log "🔧 added @includedir /etc/sudoers.d to /etc/sudoers"
+    else
+      warn "could not add @includedir /etc/sudoers.d to /etc/sudoers"
+    fi
+    rm -f "$SUDOERS_TMP"
   fi
+
+  if ! runuser -u "$TAMINARU_USER" -- sudo -n true 2>/dev/null; then
+    warn "passwordless sudo for $TAMINARU_USER is not effective after writing $SUDOERS"
+    warn "check that /etc/sudoers includes '@includedir /etc/sudoers.d' and that sudo-rs >= 0.2.14 is installed (0.2.13 has an /etc/group long-line bug)"
+    exit 1
+  fi
+  log "🔑 passwordless sudo verified for $TAMINARU_USER"
 
   USER_HOME="$(getent passwd "$TAMINARU_USER" | cut -d: -f6)"
   USER_REPO="$USER_HOME/Taminaru"
