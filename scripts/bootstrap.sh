@@ -10,18 +10,51 @@
 # to the AI coding harnesses (pi/opencode/mammouth), and applies the default
 # catppuccin theme. Idempotent and safe to re-run.
 #
+# Running as root on a fresh Ubuntu first creates a non-root user (default:
+# taminaru, passwordless with NOPASSWD sudo), copies this repo into their home,
+# and re-runs the whole bootstrap as that user.
+#
 # Usage: bash scripts/bootstrap.sh
 #        FLAVOR=macchiato bash scripts/bootstrap.sh
+#        TAMINARU_USER=bob bash scripts/bootstrap.sh
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_DIR="$REPO_DIR/config"
 FLAVOR="${FLAVOR:-frappe}"
+TAMINARU_USER="${TAMINARU_USER:-taminaru}"
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
 
 log "✨ Taminaru dotfiles bootstrap — sit back, we've got this"
+
+# 0a. Fresh install: when running as root, create a non-root user so we don't
+#     have to use root, then re-run the rest of this script as that user.
+if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
+  if ! id "$TAMINARU_USER" >/dev/null 2>&1; then
+    log "👤 Creating user $TAMINARU_USER (passwordless, NOPASSWD sudo)..."
+    useradd -m -s /bin/bash "$TAMINARU_USER"
+    SUDOERS="/etc/sudoers.d/$TAMINARU_USER"
+    printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TAMINARU_USER" > "$SUDOERS"
+    chmod 440 "$SUDOERS"
+    visudo -cf "$SUDOERS"
+  else
+    log "👤 user $TAMINARU_USER already exists"
+  fi
+
+  USER_HOME="$(getent passwd "$TAMINARU_USER" | cut -d: -f6)"
+  USER_REPO="$USER_HOME/Taminaru"
+  if [ ! -d "$USER_REPO" ]; then
+    log "📂 Copying repo to $USER_REPO..."
+    cp -a "$REPO_DIR" "$USER_REPO"
+    chown -R "$TAMINARU_USER:$TAMINARU_USER" "$USER_REPO"
+  fi
+
+  log "🔁 Re-running bootstrap as $TAMINARU_USER..."
+  runuser -u "$TAMINARU_USER" -- env FLAVOR="$FLAVOR" bash "$USER_REPO/scripts/bootstrap.sh" "$@"
+  exit $?
+fi
 
 # 0. apt prerequisites (curl + git + libicu-dev, pwsh needs libicu) - only when missing
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 \
