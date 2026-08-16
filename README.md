@@ -11,6 +11,12 @@
 Everything is driven from PowerShell. All tools are provisioned with [mise](https://mise.jdx.dev)
 (see `mise.toml` / `mise.lock`), and themes are applied from this repo.
 
+### Dependencies
+
+The full dependency stack — apt packages, all 26 mise tools, and the conda
+packages (imagemagick, lua, luarocks) — is documented in
+[`documentation/dependencies.md`](documentation/dependencies.md).
+
 ### Prerequisites
 
 * `curl`, `git`, `sudo` - must be installed before bootstrapping (the one-liner
