@@ -48,9 +48,9 @@ if [ "$(id -u)" -ne 0 ]; then
   fi
   APT_GET="sudo apt-get"
 fi
-log "📦 Installing apt packages (curl git sudo unzip build-essential libicu-dev ...)..."
+log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential libicu-dev ...)..."
 $APT_GET update
-$APT_GET install -y curl git sudo unzip ca-certificates libicu-dev \
+$APT_GET install -y curl git sudo unzip xz-utils ca-certificates libicu-dev \
   libssl3 libgssapi-krb5-2 zlib1g build-essential
 
 # 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the

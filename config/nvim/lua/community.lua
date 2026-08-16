@@ -17,4 +17,7 @@ return {
   { import = "astrocommunity.diagnostics.lsp_lines-nvim" },
   { import = "astrocommunity.utility.noice-nvim" },
   { import = "astrocommunity.media.image-nvim" },
+  { import = "astrocommunity.pack.python" },
+  { import = "astrocommunity.pack.ps1" },
+  { import = "astrocommunity.pack.zig" },
 }
