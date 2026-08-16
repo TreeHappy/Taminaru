@@ -21,8 +21,9 @@ packages (imagemagick, lua, luarocks) — is documented in
 ### Bootstrap
 
 Installs all tools with mise (including the `pi` and `mammouth` coding
-harnesses), symlinks every `config/*` directory into
-`~/.config/*`, wires mise into the pwsh profile, themes the AI coding harnesses
+harnesses), applies the dotfiles with [chezmoi](https://www.chezmoi.io/) (no
+symlinks — the repo's `dotfiles/` is the chezmoi source, applied as real files
+into `$HOME`), wires mise into the pwsh profile, themes the AI coding harnesses
 (`pi`, `opencode`, `mammouth`) with catppuccin, and applies the default theme
 (frappe).
 
@@ -52,6 +53,17 @@ Or, if you already have the repo cloned, run the bootstrap directly:
 bash scripts/bootstrap.sh
 ```
 
+### Dotfiles sync (chezmoi)
+
+The repo's `dotfiles/` is the chezmoi source; config is applied to `$HOME` as
+real files (no symlinks), so the machine stands alone and the repo stays the
+single source of truth.
+
+```bash
+bash scripts/sync.sh        # git pull + chezmoi apply (repo → $HOME)
+bash scripts/sync-push.sh   # capture home edits back + commit + push
+```
+
 Running as root (e.g. right after a fresh Ubuntu install) first creates a
 non-root user — default name `taminaru`, passwordless with NOPASSWD sudo,
 overridable via `TAMINARU_USER=bob bash scripts/bootstrap.sh` — copies this
@@ -77,19 +89,21 @@ and starts pwsh — see
 ### Your pwsh profile
 
 pwsh on Linux reads `~/.config/powershell/profile.ps1`
-(`$PROFILE.CurrentUserAllHosts`) at startup. The bootstrap symlinks
-`config/powershell` → `~/.config/powershell`, so that file **is** the repo's
-`config/powershell/profile.ps1` — the repo stays the single source of truth.
+(`$PROFILE.CurrentUserAllHosts`) at startup. The bootstrap applies the repo's
+`dotfiles/dot_config/powershell/profile.ps1` to `~/.config/powershell/profile.ps1`
+via chezmoi (a real copy, not a symlink) — the repo stays the single source of
+truth.
 
-Edit `config/powershell/profile.ps1` in the repo (or equivalently
-`~/.config/powershell/profile.ps1`), NOT the bare `$PROFILE` — that points to
+Edit `dotfiles/dot_config/powershell/profile.ps1` in the repo, then
+`bash scripts/sync.sh` to re-apply it (or edit `~/.config/powershell/profile.ps1`
+and run `bash scripts/sync-push.sh` to capture the change back). Don't edit the
+bare `$PROFILE` — that points to
 `~/.config/powershell/Microsoft.PowerShell_profile.ps1`, which Taminaru neither
 creates nor loads.
 
 Keep the `# --- Taminaru managed ---` block intact: it dot-sources
 `theme.ps1` and `mise.ps1` and imports the `Taminaru.Theme` module (which
-provides `Set-TaminaruTheme` and `Update-Taminaru`). The bootstrap re-appends
-that block if it's ever missing.
+provides `Set-TaminaruTheme` and `Update-Taminaru`).
 
 Verify with:
 

@@ -16,11 +16,11 @@
 $Script:RepoDir = $null
 
 function Get-TaminaruRepoDir {
-    # The module lives at <repo>/config/powershell/Modules/Taminaru.Theme/, but
-    # in a deployed setup that path is reached through the ~/.config symlink, so
-    # Resolve-Path/Split-Path can't walk back to the repo. git --show-toplevel
-    # follows the symlink to the real repo root; the walk-up is the fallback for
-    # repos not under git.
+    # The module lives at <repo>/dotfiles/dot_config/powershell/Modules/Taminaru.Theme/
+    # in the source tree. In a deployed setup chezmoi copies it to
+    # ~/.config/powershell/Modules/... (a real dir, not a symlink), so
+    # git --show-toplevel / a walk-up can't always find the repo; fall back to
+    # the fixed install path $HOME/Taminaru.
     if ($Script:RepoDir) { return $Script:RepoDir }
     $repoDir = $null
     $git = Get-Command git -ErrorAction SilentlyContinue
@@ -37,6 +37,9 @@ function Get-TaminaruRepoDir {
             $dir = $parent
         }
     }
+    if (-not $repoDir -and (Test-Path (Join-Path $HOME "Taminaru/mise.toml"))) {
+        $repoDir = Join-Path $HOME "Taminaru"
+    }
     $Script:RepoDir = $repoDir
     return $repoDir
 }
@@ -46,7 +49,7 @@ function Get-TaminaruTheme {
     .SYNOPSIS
       Prints the currently active catppuccin flavor.
     #>
-    $ghostty = Join-Path (Get-TaminaruRepoDir) "config/ghostty/config"
+    $ghostty = Join-Path (Get-TaminaruRepoDir) "dotfiles/dot_config/ghostty/config"
     $cur = 'frappe'
     if (Test-Path $ghostty) {
         $line = Get-Content $ghostty | Where-Object { $_ -match '^theme = "Catppuccin (\w+)"' } | Select-Object -First 1
@@ -73,7 +76,7 @@ function Set-TaminaruTheme {
     $ErrorActionPreference = "Stop"
 
     $RepoDir   = Get-TaminaruRepoDir
-    $ConfigDir = Join-Path $RepoDir "config"
+    $ConfigDir = Join-Path $RepoDir "dotfiles/dot_config"
 
     $Valid = @("latte", "frappe", "macchiato", "mocha")
     if ($Valid -notcontains $Flavor) {

@@ -1,0 +1,8 @@
+# chezmoiignore — paths chezmoi should NOT manage.
+# Patterns match target paths relative to $HOME.
+
+# carapace writes generated bin shims here at apply time; leave them alone.
+.config/carapace/bin
+
+# nvim README is documentation, not runtime config.
+.config/nvim/README.md

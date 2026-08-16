@@ -3,12 +3,12 @@
 # Taminaru dotfiles bootstrap (bash).
 #
 # Provisions a fresh machine (tested on Ubuntu): installs mise (if missing),
-# provisions every tool from mise.toml/mise.lock (including pwsh itself), sets
-# mise.toml as the global mise config so tools work from anywhere, symlinks
-# config/<tool>/ into ~/.config/<tool>/ so the repo stays the single source of
-# truth, wires mise activation into the pwsh profile, applies catppuccin themes
-# to the AI coding harnesses (pi/opencode/mammouth), and applies the default
-# catppuccin theme. Idempotent and safe to re-run.
+# provisions every tool from mise.toml/mise.lock (including pwsh and chezmoi),
+# points mise at this repo's mise.toml via MISE_CONFIG_FILE, applies the
+# dotfiles with chezmoi (no symlinks) from dotfiles/, wires mise activation
+# into the bash + pwsh profiles, applies catppuccin themes to the AI coding
+# harnesses (pi/opencode/mammouth), and applies the default catppuccin theme.
+# Idempotent and safe to re-run.
 #
 # Each run also purges the nvim data dirs (~/.local/{share,state,cache}/nvim,
 # and any stale .bak leftovers) so plugins and treesitter parsers are always
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONFIG_DIR="$REPO_DIR/config"
+CONFIG_DIR="$REPO_DIR/dotfiles/dot_config"
 FLAVOR="${FLAVOR:-frappe}"
 TAMINARU_USER="${TAMINARU_USER:-taminaru}"
 
@@ -132,41 +132,22 @@ fi
 log "🔧 Installing tools from mise.toml..."
 (cd "$REPO_DIR" && "$MISE_BIN" install)
 
-# 2b. Set this repo's mise.toml as the GLOBAL mise config so every tool is
-#     available from anywhere (symlink keeps the repo the single source of truth).
-MISE_GLOBAL_DIR="$HOME/.config/mise"
-MISE_GLOBAL="$MISE_GLOBAL_DIR/config.toml"
-mkdir -p "$MISE_GLOBAL_DIR"
-if [ -e "$MISE_GLOBAL" ] && [ ! -L "$MISE_GLOBAL" ]; then
-  warn "$MISE_GLOBAL exists and is not a symlink; moving to ${MISE_GLOBAL}.bak"
-  mv "$MISE_GLOBAL" "${MISE_GLOBAL}.bak"
-fi
-ln -sf "$REPO_DIR/mise.toml" "$MISE_GLOBAL"
-log "🌍 global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
+# 2b. Global mise config: tools are provisioned from this repo's mise.toml,
+#     which is trusted (see [settings] trusted_config_paths). The managed shell
+#     files under dotfiles/ point mise at it via MISE_CONFIG_FILE, so no symlink
+#     is created here.
+log "🌍 global mise config: \$HOME/Taminaru/mise.toml (via MISE_CONFIG_FILE in dotfiles)"
 
 # 2c. Mammouth Code is provisioned via mise from github:mammouth-ai/code
 #     (see [tool_alias] in mise.toml)
 
-# 3. Symlink configs into ~/.config
-# (opencode/mammouth keep their full dirs self-managed; only tui.json is linked below)
-SKIP_DIRS="winget git opencode mammouth"
-mkdir -p "$HOME/.config"
-for dir in "$CONFIG_DIR"/*/; do
-  name="$(basename "$dir")"
-  case " $SKIP_DIRS " in
-    *" $name "*) continue ;;
-  esac
-  target="$HOME/.config/$name"
-  if [ -L "$target" ] && [ "$(readlink -f "$target")" = "$(readlink -f "$dir")" ]; then
-    continue
-  fi
-  if [ -e "$target" ] || [ -L "$target" ]; then
-    warn "~/.config/$name exists and differs from the repo; moving to ${target}.bak"
-    mv "$target" "${target}.bak"
-  fi
-  ln -s "$dir" "$target"
-  log "🔗 linked ~/.config/$name -> $dir"
-done
+# 3. Apply dotfiles with chezmoi (no symlinks). The source dir is
+#     $REPO_DIR/dotfiles, which holds config in chezmoi's dot_* layout; chezmoi
+#     materializes REAL files into $HOME so the machine stands alone while the
+#     repo stays the single source of truth.
+log "🎯 Applying dotfiles with chezmoi (source: \$REPO_DIR/dotfiles)..."
+CHEZMOI_SOURCE="$REPO_DIR/dotfiles"
+"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply
 
 # 3a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
 #     state, cache). They are derived state recreated by nvim, but stale
@@ -184,39 +165,10 @@ if [ "$NVIM_WIPE" = "1" ]; then
   done
 fi
 
-# 3b. Remove stale symlinks for tools that were dropped from the repo
-#     (rofi/wofi/waybar/hypr). Only symlinks are removed; real dirs are kept.
-for name in rofi wofi waybar hypr; do
-  target="$HOME/.config/$name"
-  if [ -L "$target" ]; then
-    rm -f "$target"
-    log "🧹 removed stale ~/.config/$name symlink"
-  fi
-done
-
-# 3c. AI coding harness themes (managed files, idempotent). opencode/mammouth
-#     manage their own config dirs, so only tui.json is linked. pi settings live
-#     under ~/.pi/agent; its catppuccin themes come from the
-#     @firstpick/pi-themes-bundle package (installed in 3d), not local files.
-mkdir -p "$HOME/.config/opencode"
-ln -sf "$CONFIG_DIR/opencode/tui.json" "$HOME/.config/opencode/tui.json"
-log "🔗 linked ~/.config/opencode/tui.json -> $CONFIG_DIR/opencode/tui.json"
-
-mkdir -p "$HOME/.config/mammouth"
-ln -sf "$CONFIG_DIR/mammouth/tui.json" "$HOME/.config/mammouth/tui.json"
-log "🔗 linked ~/.config/mammouth/tui.json -> $CONFIG_DIR/mammouth/tui.json"
-
-ln -sf "$CONFIG_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
-if [ -f "$CONFIG_DIR/pi/mcp.json" ]; then
-  ln -sf "$CONFIG_DIR/pi/mcp.json" "$HOME/.pi/agent/mcp.json"
-fi
-log "🔗 linked ~/.pi/agent/{settings.json,mcp.json} -> $CONFIG_DIR/pi"
-
-# 3d. Install pi packages (coding-agent plugins/extensions) declared in the
-#     "packages" array of the (symlinked) settings.json. `pi install` is
-#     idempotent: it ensures each package is present, keeps the entry in the
-#     repo's settings.json in sync, and runs npm install for its dependencies.
-#     pi itself is provisioned by mise (see mise.toml), so we run it via mise x.
+# 3b. Install pi packages (coding-agent plugins/extensions) declared in the
+#     "packages" array of ~/.pi/agent/settings.json (applied by chezmoi above).
+#     `pi install` is idempotent: it ensures each package is present and runs
+#     npm install for its dependencies. pi itself is provisioned by mise.
 PI_PACKAGES="$(grep -oE '"npm:[^"]+"' "$HOME/.pi/agent/settings.json" 2>/dev/null | tr -d '"' || true)"
 for pkg in $PI_PACKAGES; do
   if "$MISE_BIN" x pi -- pi install "$pkg" >/dev/null 2>&1; then
@@ -226,102 +178,8 @@ for pkg in $PI_PACKAGES; do
   fi
 done
 
-# 4. starship lives at ~/.config/starship.toml (not a subdirectory)
-STARSHIP_TARGET="$HOME/.config/starship.toml"
-if [ ! -e "$STARSHIP_TARGET" ] && [ -f "$CONFIG_DIR/starship/starship.toml" ]; then
-  ln -s "$CONFIG_DIR/starship/starship.toml" "$STARSHIP_TARGET"
-  log "🪐 linked ~/.config/starship.toml -> $CONFIG_DIR/starship/starship.toml"
-fi
-
-# 4b. atuin: force the local sqlite backend (managed file, idempotent)
-ATUIN_DIR="$CONFIG_DIR/atuin"
-mkdir -p "$ATUIN_DIR"
-cat > "$ATUIN_DIR/config.toml" <<'EOF'
-# atuin config (managed by scripts/bootstrap.sh)
-db_path = "~/.local/share/atuin/history.db"
-
-[ai]
-enabled = true
-
-[ai.opening]
-send_cwd = true
-send_last_command = true
-EOF
-log "🗄️  wrote $ATUIN_DIR/config.toml (sqlite backend + ai enabled)"
-
-# 5. pwsh: mise activation + profile wiring (managed files, idempotent)
-PW_DIR="$CONFIG_DIR/powershell"
-mkdir -p "$PW_DIR"
-cat > "$PW_DIR/mise.ps1" <<'EOF'
-# mise activation (managed by scripts/bootstrap.sh)
-$mise = Join-Path $HOME ".local/bin/mise"
-if (Get-Command mise -ErrorAction SilentlyContinue) {
-    mise activate pwsh | Out-String | Invoke-Expression
-} elseif (Test-Path $mise) {
-    $env:PATH = (Join-Path $HOME ".local/bin") + ";" + $env:PATH
-    & $mise activate pwsh | Out-String | Invoke-Expression
-}
-EOF
-
-PROFILE="$PW_DIR/profile.ps1"
-write_managed_block() {
-  printf '%s\n' \
-    '# --- Taminaru managed ---' \
-    'if (Test-Path (Join-Path $PSScriptRoot "theme.ps1")) { . (Join-Path $PSScriptRoot "theme.ps1") }' \
-    'if (Test-Path (Join-Path $PSScriptRoot "mise.ps1"))  { . (Join-Path $PSScriptRoot "mise.ps1") }' \
-    '$taminaruTheme = Join-Path $PSScriptRoot "Modules/Taminaru.Theme/Taminaru.Theme.psm1"' \
-    'if (Test-Path $taminaruTheme) { Import-Module $taminaruTheme -Force }' \
-    '# --- /Taminaru managed ---'
-}
-if [ ! -f "$PROFILE" ]; then
-  write_managed_block > "$PROFILE"
-else
-  if ! grep -q "# --- Taminaru managed ---" "$PROFILE"; then
-    write_managed_block >> "$PROFILE"
-  fi
-fi
-log "⚡ wrote $PW_DIR/mise.ps1 + ensured managed block in $PROFILE"
-
-# 5a. bash: mise activation + pwsh handoff so tools are on PATH and an
-#     interactive bash lands in $HOME and starts pwsh
-BASH_DIR="$CONFIG_DIR/bash"
-mkdir -p "$BASH_DIR"
-cat > "$BASH_DIR/mise.sh" <<'EOF'
-# mise activation (managed by scripts/bootstrap.sh)
-if command -v mise >/dev/null 2>&1; then
-    eval "$(mise activate bash)"
-elif [ -x "$HOME/.local/bin/mise" ]; then
-    export PATH="$HOME/.local/bin:$PATH"
-    eval "$("$HOME/.local/bin/mise" activate bash)"
-fi
-EOF
-cat > "$BASH_DIR/pwsh.sh" <<'EOF'
-# start pwsh from an interactive bash, in $HOME (managed by scripts/bootstrap.sh)
-if command -v pwsh >/dev/null 2>&1 && [[ $- == *i* ]]; then
-    cd "$HOME"
-    exec pwsh
-fi
-EOF
-
-BASHRC="$HOME/.bashrc"
-write_bash_managed_block() {
-  printf '%s\n' \
-    '# --- Taminaru managed ---' \
-    '[ -f "$HOME/.config/bash/mise.sh" ] && . "$HOME/.config/bash/mise.sh"' \
-    '[ -f "$HOME/.config/bash/pwsh.sh" ] && . "$HOME/.config/bash/pwsh.sh"' \
-    '# --- /Taminaru managed ---'
-}
-if [ ! -f "$BASHRC" ]; then
-  touch "$BASHRC"
-fi
-if grep -q "# --- Taminaru managed ---" "$BASHRC"; then
-  awk '/^# --- Taminaru managed ---$/{skip=1; next} /^# --- \/Taminaru managed ---$/{skip=0; next} !skip' "$BASHRC" > "$BASHRC.tmp" && mv "$BASHRC.tmp" "$BASHRC"
-fi
-if [ -s "$BASHRC" ] && [ -n "$(tail -c1 "$BASHRC")" ]; then
-  printf '\n' >> "$BASHRC"
-fi
-write_bash_managed_block >> "$BASHRC"
-log "⚡ wrote $BASH_DIR/mise.sh + $BASH_DIR/pwsh.sh + ensured managed block in $BASHRC"
+# 4. starship, atuin, pwsh/bash profiles and mise activation are all
+#    chezmoi-managed (applied in step 3) — nothing to symlink or write here.
 
 # 5b. Switch the login shell to pwsh (needs pwsh listed in /etc/shells first)
 MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
@@ -356,5 +214,9 @@ fi
 # 6. Apply the default catppuccin theme via the mise-installed pwsh
 log "🎨 Applying catppuccin $FLAVOR theme..."
 "$MISE_BIN" x powershell -- pwsh -NoProfile -File "$REPO_DIR/scripts/theme.ps1" "$FLAVOR"
+
+# 6b. The theme switch edits files in the chezmoi source dir; re-apply so the
+#     updated theme reaches $HOME.
+"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply
 
 log "✅ Done. Log out and back in (or open a new shell), then run: pwsh"

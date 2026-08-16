@@ -4,5 +4,6 @@
 *.lock.toml.bak
 Thumbs.db
 
-# carapace generates these bin shims (absolute paths) from specs/*.yaml
-config/carapace/bin/
+# carapace writes generated bin shims into ~/.config/carapace/bin at apply
+# time; that path is excluded via dotfiles/.chezmoiignore, so nothing is
+# tracked in the repo for it.

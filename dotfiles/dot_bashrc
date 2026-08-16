@@ -1,0 +1,9 @@
+# Taminaru-managed bashrc (applied by chezmoi).
+# Interactive bash activates mise then hands off to pwsh (see pwsh.sh).
+[ -f "$HOME/.config/bash/mise.sh" ] && . "$HOME/.config/bash/mise.sh"
+[ -f "$HOME/.config/bash/pwsh.sh" ] && . "$HOME/.config/bash/pwsh.sh"
+
+# Minimal prompt fallback for non-interactive / pre-pwsh shells.
+if [[ $- == *i* ]] && ! command -v pwsh >/dev/null 2>&1; then
+    PS1='[\u@\h \W]\$ '
+fi
