@@ -6,6 +6,7 @@
   <img src="images/currentscreen.png" width="500"/>
 </div>
 
+![./images/currentscreen.png](./images/currentscreen.png)
 ## Usage
 
 Everything is driven from PowerShell. All tools are provisioned with [mise](https://mise.jdx.dev)
