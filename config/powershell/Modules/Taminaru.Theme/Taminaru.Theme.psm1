@@ -158,27 +158,6 @@ function Set-TaminaruTheme {
         Set-Content -Path $Path -Value $content -NoNewline -Encoding utf8NoBOM
     }
 
-    function Invoke-SubRgb {
-        param([string]$Path)
-        $content = Get-Content -Raw -Path $Path
-        foreach ($c in $Colors) {
-            $srcRgb = ConvertTo-Rgb $Src[$c]
-            $dstRgb = ConvertTo-Rgb $Target[$c]
-            $content = $content -ireplace [regex]::Escape($srcRgb), $dstRgb
-        }
-        Set-Content -Path $Path -Value $content -NoNewline -Encoding utf8NoBOM
-    }
-
-    # Ensure a flavor-named file exists, regenerated from the canonical frappe
-    # version so the result is deterministic regardless of the current flavor.
-    function Set-FlavorFile {
-        param([string]$Source, [string]$Dest)
-        if (Test-Path $Dest) { return }
-        Copy-Item $Source $Dest
-        Invoke-SubHex $Dest
-        Invoke-SubRgb $Dest
-    }
-
     function Write-Log {
         param([string]$Message)
         Write-Host "[theme] $Message" -ForegroundColor Blue
@@ -289,6 +268,34 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         Write-Log "nvim: catppuccin.lua -> $Flavor"
     }
 
+    # AI coding harnesses (pi, opencode, mammouth). opencode/mammouth ship no
+    # built-in latte, so latte falls back to the default catppuccin theme.
+    $HarnessThemeMap = @{
+        latte     = 'catppuccin'
+        frappe    = 'catppuccin-frappe'
+        macchiato = 'catppuccin-macchiato'
+        mocha     = 'catppuccin'
+    }
+    $SetHarnessTheme = {
+        param($Path, $Theme)
+        $content = Get-Content -Raw $Path
+        $content = $content -replace '"theme"\s*:\s*"[^"]*"', "`"theme`": `"$Theme`""
+        Set-Content -Path $Path -Value $content -NoNewline -Encoding utf8NoBOM
+    }
+
+    $PiSettings = Join-Path $ConfigDir "pi/settings.json"
+    if (Test-Path $PiSettings) {
+        & $SetHarnessTheme $PiSettings "catppuccin-$Flavor"
+        Write-Log "pi: settings.json -> catppuccin-$Flavor"
+    }
+    foreach ($tool in @('opencode', 'mammouth')) {
+        $Tui = Join-Path $ConfigDir "$tool/tui.json"
+        if (Test-Path $Tui) {
+            & $SetHarnessTheme $Tui $HarnessThemeMap[$Flavor]
+            Write-Log "${tool}: tui.json -> $($HarnessThemeMap[$Flavor])"
+        }
+    }
+
     # ------------------------------------------------- desktop tools
 
     # ghostty
@@ -307,59 +314,6 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         $content = $content -replace 'config\.color_scheme = "Catppuccin .*(Gogh)"', "config.color_scheme = `"Catppuccin $Title (Gogh)`""
         Set-Content -Path $Wezterm -Value $content -NoNewline -Encoding utf8NoBOM
         Write-Log "wezterm: -> Catppuccin $Title"
-    }
-
-    # waybar (regenerate target css from canonical frappe.css, drop stale flavors)
-    $WaybarThemes = Join-Path $ConfigDir "waybar/themes"
-    $FrappeCss = Join-Path $WaybarThemes "frappe.css"
-    if (Test-Path $FrappeCss) {
-        Set-FlavorFile -Source $FrappeCss -Dest (Join-Path $WaybarThemes "$Flavor.css")
-        Get-ChildItem -Path $WaybarThemes -Filter "*.css" |
-            Where-Object { $_.BaseName -ne 'frappe' -and $_.BaseName -ne $Flavor } |
-            Remove-Item -Force
-        $style = Join-Path $ConfigDir "waybar/style.css"
-        $content = Get-Content -Raw $style
-        $content = $content -replace '@import "themes/[a-z]*\.css";', "@import `"themes/$Flavor.css`";"
-        Set-Content -Path $style -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "waybar: -> $Flavor.css"
-    }
-
-    # rofi
-    $RofiDir = Join-Path $ConfigDir "rofi"
-    $FrappeRasi = Join-Path $RofiDir "catppuccin-frappe.rasi"
-    if (Test-Path $FrappeRasi) {
-        Set-FlavorFile -Source $FrappeRasi -Dest (Join-Path $RofiDir "catppuccin-$Flavor.rasi")
-        Get-ChildItem -Path $RofiDir -Filter "catppuccin-*.rasi" |
-            Where-Object { $_.BaseName -ne 'catppuccin-frappe' -and $_.BaseName -ne "catppuccin-$Flavor" } |
-            Remove-Item -Force
-        $rasi = Join-Path $RofiDir "config.rasi"
-        $content = Get-Content -Raw $rasi
-        $content = $content -replace '@import "catppuccin-[a-z]*"', "@import `"catppuccin-$Flavor`""
-        Set-Content -Path $rasi -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "rofi: -> catppuccin-$Flavor"
-    }
-
-    # wofi
-    $Wofi = Join-Path $ConfigDir "wofi/style.css"
-    if (Test-Path $Wofi) {
-        Invoke-SubHex $Wofi
-        Invoke-SubRgb $Wofi
-        Write-Log "wofi: style.css -> $Flavor"
-    }
-
-    # hyprland
-    $HyprThemes = Join-Path $ConfigDir "hypr/themes"
-    $FrappeConf = Join-Path $HyprThemes "frappe.conf"
-    if (Test-Path $FrappeConf) {
-        Set-FlavorFile -Source $FrappeConf -Dest (Join-Path $HyprThemes "$Flavor.conf")
-        Get-ChildItem -Path $HyprThemes -Filter "*.conf" |
-            Where-Object { $_.BaseName -ne 'frappe' -and $_.BaseName -ne $Flavor } |
-            Remove-Item -Force
-        $hypr = Join-Path $ConfigDir "hypr/hyprland.conf"
-        $content = Get-Content -Raw $hypr
-        $content = $content -replace 'source = ~/\.config/hypr/themes/[a-z]*\.conf', "source = ~/.config/hypr/themes/$Flavor.conf"
-        Set-Content -Path $hypr -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "hypr: -> $Flavor.conf"
     }
 
     Write-Host "[theme] All tools now use catppuccin $Title ($Flavor)." -ForegroundColor Blue

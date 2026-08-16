@@ -18,8 +18,11 @@ Everything is driven from PowerShell. All tools are provisioned with [mise](http
 
 ### Bootstrap
 
-Installs all tools with mise, symlinks every `config/*` directory into `~/.config/*`,
-wires mise into the pwsh profile, and applies the default theme (frappe).
+Installs all tools with mise (including the `pi` coding harness), installs
+Mammouth Code from code.mammouth.ai, symlinks every `config/*` directory into
+`~/.config/*`, wires mise into the pwsh profile, themes the AI coding harnesses
+(`pi`, `opencode`, `mammouth`) with catppuccin, and applies the default theme
+(frappe).
 
 On a fresh Ubuntu machine (bash):
 

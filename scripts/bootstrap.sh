@@ -4,10 +4,12 @@
 #
 # Provisions a fresh machine (tested on Ubuntu): installs mise (if missing),
 # provisions every tool from mise.toml/mise.lock (including pwsh itself),
-# sets mise.toml as the global mise config so tools work from anywhere,
-# symlinks config/<tool>/ into ~/.config/<tool>/ so the repo stays the single
-# source of truth, wires mise activation into the pwsh profile, and applies the
-# default catppuccin theme. Idempotent and safe to re-run.
+# installs Mammouth Code (opencode fork) from code.mammouth.ai, sets mise.toml
+# as the global mise config so tools work from anywhere, symlinks
+# config/<tool>/ into ~/.config/<tool>/ so the repo stays the single source of
+# truth, wires mise activation into the pwsh profile, applies catppuccin themes
+# to the AI coding harnesses (pi/opencode/mammouth), and applies the default
+# catppuccin theme. Idempotent and safe to re-run.
 #
 # Usage: bash scripts/bootstrap.sh
 #        FLAVOR=macchiato bash scripts/bootstrap.sh
@@ -59,8 +61,18 @@ fi
 ln -sf "$REPO_DIR/mise.toml" "$MISE_GLOBAL"
 log "global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
 
+# 2c. Install Mammouth Code (opencode fork, not a mise tool)
+MAMMOUTH_BIN="$HOME/.mammouth/bin/mammouth"
+if [ -x "$MAMMOUTH_BIN" ]; then
+  log "mammouth already installed: $MAMMOUTH_BIN"
+else
+  log "Installing Mammouth Code (from code.mammouth.ai)..."
+  curl -fsSL https://code.mammouth.ai/install.sh | bash
+fi
+
 # 3. Symlink configs into ~/.config
-SKIP_DIRS="winget git"
+# (opencode/mammouth keep their full dirs self-managed; only tui.json is linked below)
+SKIP_DIRS="winget git opencode mammouth"
 mkdir -p "$HOME/.config"
 for dir in "$CONFIG_DIR"/*/; do
   name="$(basename "$dir")"
@@ -78,6 +90,34 @@ for dir in "$CONFIG_DIR"/*/; do
   ln -s "$dir" "$target"
   log "linked ~/.config/$name -> $dir"
 done
+
+# 3a. Remove stale symlinks for tools that were dropped from the repo
+#     (rofi/wofi/waybar/hypr). Only symlinks are removed; real dirs are kept.
+for name in rofi wofi waybar hypr; do
+  target="$HOME/.config/$name"
+  if [ -L "$target" ]; then
+    rm -f "$target"
+    log "removed stale ~/.config/$name symlink"
+  fi
+done
+
+# 3b. AI coding harness themes (managed files, idempotent). opencode/mammouth
+#     manage their own config dirs, so only tui.json is linked; pi themes and
+#     settings live under ~/.pi/agent.
+mkdir -p "$HOME/.config/opencode"
+ln -sf "$CONFIG_DIR/opencode/tui.json" "$HOME/.config/opencode/tui.json"
+log "linked ~/.config/opencode/tui.json -> $CONFIG_DIR/opencode/tui.json"
+
+mkdir -p "$HOME/.config/mammouth"
+ln -sf "$CONFIG_DIR/mammouth/tui.json" "$HOME/.config/mammouth/tui.json"
+log "linked ~/.config/mammouth/tui.json -> $CONFIG_DIR/mammouth/tui.json"
+
+mkdir -p "$HOME/.pi/agent/themes"
+for theme in "$CONFIG_DIR/pi/themes/"*.json; do
+  ln -sf "$theme" "$HOME/.pi/agent/themes/$(basename "$theme")"
+done
+ln -sf "$CONFIG_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
+log "linked ~/.pi/agent/{themes,settings.json} -> $CONFIG_DIR/pi"
 
 # 4. starship lives at ~/.config/starship.toml (not a subdirectory)
 STARSHIP_TARGET="$HOME/.config/starship.toml"
