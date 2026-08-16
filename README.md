@@ -81,10 +81,59 @@ taminaru -it <container> bash` opens an interactive shell that activates mise
 and starts pwsh — see
 [`documentation/podman-exec.md`](documentation/podman-exec.md).
 
+### Your pwsh profile
+
+pwsh on Linux reads `~/.config/powershell/profile.ps1`
+(`$PROFILE.CurrentUserAllHosts`) at startup. The bootstrap symlinks
+`config/powershell` → `~/.config/powershell`, so that file **is** the repo's
+`config/powershell/profile.ps1` — the repo stays the single source of truth.
+
+Edit `config/powershell/profile.ps1` in the repo (or equivalently
+`~/.config/powershell/profile.ps1`), NOT the bare `$PROFILE` — that points to
+`~/.config/powershell/Microsoft.PowerShell_profile.ps1`, which Taminaru neither
+creates nor loads.
+
+Keep the `# --- Taminaru managed ---` block intact: it dot-sources
+`theme.ps1` and `mise.ps1` and imports the `Taminaru.Theme` module (which
+provides `Set-TaminaruTheme` and `Update-Taminaru`). The bootstrap re-appends
+that block if it's ever missing.
+
+Verify with:
+
+```powershell
+pwsh -NoProfile -Command '$PROFILE.CurrentUserAllHosts'
+# => /home/<user>/.config/powershell/profile.ps1
+```
+
+### Updating
+
+The pwsh module (loaded from `$PROFILE`) also updates Taminaru. From any
+pwsh session:
+
+```powershell
+Update-Taminaru
+```
+
+It runs three steps, all in `~/Taminaru`:
+1. Restores every tracked file to HEAD (`git checkout -- .`)
+2. Pulls the latest commit from origin (`git pull`)
+3. Re-runs `bash scripts/bootstrap.sh` to regenerate config, themes, and tools
+
+Notes:
+- **Uncommitted changes are discarded** — commit anything you want to keep
+  first: `git -C ~/Taminaru add -A && git -C ~/Taminaru commit`.
+- Theme switches are uncommitted repo edits, so an update resets the flavor to
+  the default (frappe); re-apply afterwards with
+  `Set-TaminaruTheme macchiato`.
+- The bootstrap step wipes the nvim data dirs unless `NVIM_WIPE=0` is set.
+- Manual equivalent:
+  `git -C ~/Taminaru pull && bash ~/Taminaru/scripts/bootstrap.sh`.
+
 ### Theme switcher
 
 The theme switcher is a pwsh module (`Taminaru.Theme`) that is loaded from your
-`$PROFILE`, so you can switch flavors from any pwsh session:
+pwsh profile (see [Your pwsh profile](#your-pwsh-profile)), so you can switch
+flavors from any pwsh session:
 
 ```powershell
 Set-TaminaruTheme macchiato    # latte | frappe | macchiato | mocha
