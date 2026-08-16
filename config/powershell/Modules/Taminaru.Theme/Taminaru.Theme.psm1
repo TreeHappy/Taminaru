@@ -322,4 +322,44 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
     Write-Host "[theme] 🎉 All tools now use catppuccin $Title ($Flavor)." -ForegroundColor Blue
 }
 
-Export-ModuleMember -Function Set-TaminaruTheme, Get-TaminaruTheme, Get-TaminaruRepoDir
+function Update-Taminaru {
+    <#
+    .SYNOPSIS
+      Updates Taminaru: restores generated files, pulls latest, re-runs bootstrap.
+
+    .DESCRIPTION
+      Restores every tracked file to HEAD (discarding changes written by theme
+      switches, mise installs and the bootstrap's managed files), pulls the
+      latest commit from origin, then runs scripts/bootstrap.sh to regenerate
+      them.
+
+      Because the repo is the single source of truth, uncommitted tweaks are
+      discarded — commit anything you want to keep before running this.
+    #>
+    $ErrorActionPreference = "Stop"
+
+    $RepoDir = Join-Path $HOME "Taminaru"
+    if (-not (Test-Path $RepoDir)) {
+        throw "Taminaru repo not found at '$RepoDir'"
+    }
+    $Bootstrap = Join-Path $RepoDir "scripts/bootstrap.sh"
+    if (-not (Test-Path $Bootstrap)) {
+        throw "bootstrap script not found at '$Bootstrap'"
+    }
+
+    Write-Host "[taminaru] 📥 Restoring generated files..." -ForegroundColor Blue
+    git -C $RepoDir checkout -- .
+    if ($LASTEXITCODE -ne 0) { throw "failed to restore the working tree (exit $LASTEXITCODE)" }
+
+    Write-Host "[taminaru] 📥 Pulling latest changes..." -ForegroundColor Blue
+    git -C $RepoDir pull
+    if ($LASTEXITCODE -ne 0) { throw "git pull failed (exit $LASTEXITCODE)" }
+
+    Write-Host "[taminaru] 🔧 Running bootstrap..." -ForegroundColor Blue
+    & bash $Bootstrap
+    if ($LASTEXITCODE -ne 0) { throw "bootstrap failed (exit $LASTEXITCODE)" }
+
+    Write-Host "[taminaru] ✅ Taminaru is up to date." -ForegroundColor Blue
+}
+
+Export-ModuleMember -Function Set-TaminaruTheme, Get-TaminaruTheme, Get-TaminaruRepoDir, Update-Taminaru
