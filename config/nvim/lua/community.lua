@@ -16,4 +16,5 @@ return {
   { import = "astrocommunity.file-explorer.fyler-nvim" },
   { import = "astrocommunity.diagnostics.lsp_lines-nvim" },
   { import = "astrocommunity.utility.noice-nvim" },
+  { import = "astrocommunity.media.image-nvim" },
 }
