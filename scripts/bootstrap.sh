@@ -19,13 +19,16 @@ CONFIG_DIR="$REPO_DIR/config"
 FLAVOR="${FLAVOR:-frappe}"
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
-warn() { printf '\033[1;33m[taminaru]\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
 
-# 0. apt prerequisites (curl + git) - only when missing
-if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-  log "Installing curl + git via apt..."
+log "✨ Taminaru dotfiles bootstrap — sit back, we've got this"
+
+# 0. apt prerequisites (curl + git + libicu-dev, pwsh needs libicu) - only when missing
+if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 \
+   || ! dpkg -s libicu-dev >/dev/null 2>&1; then
+  log "📦 Installing curl + git + libicu-dev via apt..."
   sudo apt-get update
-  sudo apt-get install -y curl git
+  sudo apt-get install -y curl git libicu-dev
 fi
 
 # Set environment variables for non-interactive installation
@@ -36,16 +39,16 @@ export MISE_SYSTEM_DEPS="auto"
 # 1. Install mise if missing
 if command -v mise >/dev/null 2>&1; then
   MISE_BIN="$(command -v mise)"
-  log "mise already installed: $(mise --version)"
+  log "🚀 mise already installed: $(mise --version)"
 else
-  log "Installing mise..."
+  log "🚀 Installing mise..."
   curl -fsSL https://mise.run | sh
   export PATH="$HOME/.local/bin:$PATH"
   MISE_BIN="$HOME/.local/bin/mise"
 fi
 
 # 2. Provision tools (no-op when already installed; lockfile pins versions)
-log "Installing tools from mise.toml..."
+log "🔧 Installing tools from mise.toml..."
 (cd "$REPO_DIR" && "$MISE_BIN" install)
 
 # 2b. Set this repo's mise.toml as the GLOBAL mise config so every tool is
@@ -58,7 +61,7 @@ if [ -e "$MISE_GLOBAL" ] && [ ! -L "$MISE_GLOBAL" ]; then
   mv "$MISE_GLOBAL" "${MISE_GLOBAL}.bak"
 fi
 ln -sf "$REPO_DIR/mise.toml" "$MISE_GLOBAL"
-log "global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
+log "🌍 global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
 
 # 2c. Mammouth Code is provisioned via mise from github:mammouth-ai/code
 #     (see [tool_alias] in mise.toml)
@@ -81,7 +84,7 @@ for dir in "$CONFIG_DIR"/*/; do
     mv "$target" "${target}.bak"
   fi
   ln -s "$dir" "$target"
-  log "linked ~/.config/$name -> $dir"
+  log "🔗 linked ~/.config/$name -> $dir"
 done
 
 # 3a. Remove stale symlinks for tools that were dropped from the repo
@@ -90,7 +93,7 @@ for name in rofi wofi waybar hypr; do
   target="$HOME/.config/$name"
   if [ -L "$target" ]; then
     rm -f "$target"
-    log "removed stale ~/.config/$name symlink"
+    log "🧹 removed stale ~/.config/$name symlink"
   fi
 done
 
@@ -99,24 +102,24 @@ done
 #     settings live under ~/.pi/agent.
 mkdir -p "$HOME/.config/opencode"
 ln -sf "$CONFIG_DIR/opencode/tui.json" "$HOME/.config/opencode/tui.json"
-log "linked ~/.config/opencode/tui.json -> $CONFIG_DIR/opencode/tui.json"
+log "🔗 linked ~/.config/opencode/tui.json -> $CONFIG_DIR/opencode/tui.json"
 
 mkdir -p "$HOME/.config/mammouth"
 ln -sf "$CONFIG_DIR/mammouth/tui.json" "$HOME/.config/mammouth/tui.json"
-log "linked ~/.config/mammouth/tui.json -> $CONFIG_DIR/mammouth/tui.json"
+log "🔗 linked ~/.config/mammouth/tui.json -> $CONFIG_DIR/mammouth/tui.json"
 
 mkdir -p "$HOME/.pi/agent/themes"
 for theme in "$CONFIG_DIR/pi/themes/"*.json; do
   ln -sf "$theme" "$HOME/.pi/agent/themes/$(basename "$theme")"
 done
 ln -sf "$CONFIG_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
-log "linked ~/.pi/agent/{themes,settings.json} -> $CONFIG_DIR/pi"
+log "🔗 linked ~/.pi/agent/{themes,settings.json} -> $CONFIG_DIR/pi"
 
 # 4. starship lives at ~/.config/starship.toml (not a subdirectory)
 STARSHIP_TARGET="$HOME/.config/starship.toml"
 if [ ! -e "$STARSHIP_TARGET" ] && [ -f "$CONFIG_DIR/starship/starship.toml" ]; then
   ln -s "$CONFIG_DIR/starship/starship.toml" "$STARSHIP_TARGET"
-  log "linked ~/.config/starship.toml -> $CONFIG_DIR/starship/starship.toml"
+  log "🪐 linked ~/.config/starship.toml -> $CONFIG_DIR/starship/starship.toml"
 fi
 
 # 4b. atuin: force the local sqlite backend (managed file, idempotent)
@@ -126,7 +129,7 @@ cat > "$ATUIN_DIR/config.toml" <<'EOF'
 # atuin config (managed by scripts/bootstrap.sh)
 db_path = "~/.local/share/atuin/history.db"
 EOF
-log "wrote $ATUIN_DIR/config.toml (sqlite backend)"
+log "🗄️  wrote $ATUIN_DIR/config.toml (sqlite backend)"
 
 # 5. pwsh: mise activation + profile wiring (managed files, idempotent)
 PW_DIR="$CONFIG_DIR/powershell"
@@ -159,10 +162,32 @@ else
     write_managed_block >> "$PROFILE"
   fi
 fi
-log "wrote $PW_DIR/mise.ps1 + ensured managed block in $PROFILE"
+log "⚡ wrote $PW_DIR/mise.ps1 + ensured managed block in $PROFILE"
+
+# 5b. Switch the login shell to pwsh (needs pwsh listed in /etc/shells first)
+MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
+PW_SHELL="$MISE_DATA_DIR/installs/powershell/latest/pwsh"
+if [ ! -x "$PW_SHELL" ]; then
+  PW_SHELL="$("$MISE_BIN" which powershell)"
+fi
+if [ -x "$PW_SHELL" ]; then
+  if ! grep -qxF "$PW_SHELL" /etc/shells 2>/dev/null; then
+    log "🔒 Adding $PW_SHELL to /etc/shells..."
+    echo "$PW_SHELL" | sudo tee -a /etc/shells >/dev/null
+  fi
+  CURRENT_SHELL="$(getent passwd "${USER:-$(id -un)}" | cut -d: -f7)"
+  if [ "$CURRENT_SHELL" != "$PW_SHELL" ]; then
+    log "🔁 Changing login shell to $PW_SHELL (log out/in to take effect)..."
+    sudo chsh -s "$PW_SHELL" "${USER:-$(id -un)}"
+  else
+    log "✅ login shell is already $PW_SHELL"
+  fi
+else
+  warn "pwsh not found; skipping login shell change"
+fi
 
 # 6. Apply the default catppuccin theme via the mise-installed pwsh
-log "Applying catppuccin $FLAVOR theme..."
+log "🎨 Applying catppuccin $FLAVOR theme..."
 "$MISE_BIN" x powershell -- pwsh -NoProfile -File "$REPO_DIR/scripts/theme.ps1" "$FLAVOR"
 
-log "Done. Open a new shell, then run: pwsh"
+log "✅ Done. Log out and back in (or open a new shell), then run: pwsh"

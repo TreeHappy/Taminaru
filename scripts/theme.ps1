@@ -17,6 +17,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+Write-Host "✨ Taminaru theme switcher" -ForegroundColor Magenta
+
 $Module = Join-Path $PSScriptRoot "../config/powershell/Modules/Taminaru.Theme/Taminaru.Theme.psm1"
 Import-Module $Module -Force
 

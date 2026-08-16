@@ -80,6 +80,8 @@ function Set-TaminaruTheme {
     }
     $Title = (Get-Culture).TextInfo.ToTitleCase($Flavor)   # "Frappe"
 
+    Write-Host "[theme] 🎨 Applying catppuccin $Flavor..." -ForegroundColor Blue
+
     # ------------------------------------------------------------ palette
     # Palette: <color> -> <hex> per flavor (catppuccin.com/palette)
     $Palette = @{
@@ -167,7 +169,7 @@ function Set-TaminaruTheme {
 
     # eza
     $Eza = Join-Path $ConfigDir "eza/theme.yml"
-    if (Test-Path $Eza) { Invoke-SubHex $Eza; Write-Log "eza: theme.yml -> $Flavor" }
+    if (Test-Path $Eza) { Invoke-SubHex $Eza; Write-Log "🌳 eza: theme.yml -> $Flavor" }
 
     # yazi (colors + syntax theme)
     $YaziTheme = Join-Path $ConfigDir "yazi/theme.toml"
@@ -176,13 +178,13 @@ function Set-TaminaruTheme {
         $content = Get-Content -Raw $YaziTheme
         $content = $content -replace 'Catppuccin-[a-z]*\.tmTheme', "Catppuccin-$Flavor.tmTheme"
         Set-Content -Path $YaziTheme -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "yazi: theme.toml -> $Flavor"
+        Write-Log "🗂️  yazi: theme.toml -> $Flavor"
     }
     $YaziTm = Join-Path $ConfigDir "yazi/Catppuccin-$Flavor.tmTheme"
     $YaziSrc = Join-Path $ConfigDir "themes/Catppuccin $Title.tmTheme"
     if ((Test-Path $YaziSrc) -and -not (Test-Path $YaziTm)) {
         Copy-Item $YaziSrc $YaziTm
-        Write-Log "yazi: copied syntect theme"
+        Write-Log "🗂️  yazi: copied syntect theme"
     }
     Get-ChildItem -Path (Join-Path $ConfigDir "yazi") -Filter "Catppuccin-*.tmTheme" |
         Where-Object { $_.FullName -ne $YaziTm } |
@@ -194,7 +196,7 @@ function Set-TaminaruTheme {
     $BatTm = Join-Path $BatDir "Catppuccin $Title.tmTheme"
     if ((Test-Path $YaziSrc) -and -not (Test-Path $BatTm)) {
         Copy-Item $YaziSrc $BatTm
-        Write-Log "bat: copied $Title tmTheme"
+        Write-Log "🦇 bat: copied $Title tmTheme"
     }
     Get-ChildItem -Path $BatDir -Filter "Catppuccin *.tmTheme" |
         Where-Object { $_.FullName -ne $BatTm } |
@@ -202,7 +204,7 @@ function Set-TaminaruTheme {
 
     # starship (canonical file uses frappe hexes already)
     $Starship = Join-Path $ConfigDir "starship/starship.toml"
-    if (Test-Path $Starship) { Invoke-SubHex $Starship; Write-Log "starship: starship.toml -> $Flavor" }
+    if (Test-Path $Starship) { Invoke-SubHex $Starship; Write-Log "🪐 starship: starship.toml -> $Flavor" }
 
     # pwsh (PSReadLine colors, fzf opts, bat/vivid env)
     function ConvertTo-Ansi {
@@ -254,7 +256,7 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
     New-Item -ItemType Directory -Path $PwshDir -Force | Out-Null
     $ThemeFile = Join-Path $PwshDir "theme.ps1"
     Set-Content -Path $ThemeFile -Value $pwshTheme -Encoding utf8NoBOM
-    Write-Log "pwsh: powershell/theme.ps1 -> $Flavor"
+    Write-Log "⚡ pwsh: powershell/theme.ps1 -> $Flavor"
 
     # Apply to the current session so the switch takes effect immediately.
     . $ThemeFile
@@ -265,7 +267,7 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         $content = Get-Content -Raw $NvimCp
         $content = $content -replace 'flavour = "[a-z]*"', "flavour = `"$Flavor`""
         Set-Content -Path $NvimCp -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "nvim: catppuccin.lua -> $Flavor"
+        Write-Log "✍️  nvim: catppuccin.lua -> $Flavor"
     }
 
     # AI coding harnesses (pi, opencode, mammouth). opencode/mammouth ship no
@@ -286,13 +288,14 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
     $PiSettings = Join-Path $ConfigDir "pi/settings.json"
     if (Test-Path $PiSettings) {
         & $SetHarnessTheme $PiSettings "catppuccin-$Flavor"
-        Write-Log "pi: settings.json -> catppuccin-$Flavor"
+        Write-Log "🤖 pi: settings.json -> catppuccin-$Flavor"
     }
     foreach ($tool in @('opencode', 'mammouth')) {
         $Tui = Join-Path $ConfigDir "$tool/tui.json"
         if (Test-Path $Tui) {
             & $SetHarnessTheme $Tui $HarnessThemeMap[$Flavor]
-            Write-Log "${tool}: tui.json -> $($HarnessThemeMap[$Flavor])"
+            $toolEmoji = if ($tool -eq 'mammouth') { '🦣' } else { '🤖' }
+            Write-Log "$toolEmoji ${tool}: tui.json -> $($HarnessThemeMap[$Flavor])"
         }
     }
 
@@ -304,7 +307,7 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         $content = Get-Content -Raw $Ghostty
         $content = $content -replace '(?m)^theme = "Catppuccin .*"', "theme = `"Catppuccin $Title`""
         Set-Content -Path $Ghostty -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "ghostty: -> Catppuccin $Title"
+        Write-Log "👻 ghostty: -> Catppuccin $Title"
     }
 
     # wezterm
@@ -313,10 +316,10 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         $content = Get-Content -Raw $Wezterm
         $content = $content -replace 'config\.color_scheme = "Catppuccin .*(Gogh)"', "config.color_scheme = `"Catppuccin $Title (Gogh)`""
         Set-Content -Path $Wezterm -Value $content -NoNewline -Encoding utf8NoBOM
-        Write-Log "wezterm: -> Catppuccin $Title"
+        Write-Log "🖥️  wezterm: -> Catppuccin $Title"
     }
 
-    Write-Host "[theme] All tools now use catppuccin $Title ($Flavor)." -ForegroundColor Blue
+    Write-Host "[theme] 🎉 All tools now use catppuccin $Title ($Flavor)." -ForegroundColor Blue
 }
 
 Export-ModuleMember -Function Set-TaminaruTheme, Get-TaminaruTheme, Get-TaminaruRepoDir
