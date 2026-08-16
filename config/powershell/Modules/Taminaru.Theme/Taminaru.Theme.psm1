@@ -66,6 +66,7 @@ function Set-TaminaruTheme {
       One of latte, frappe, macchiato, mocha (default: frappe).
     #>
     param(
+        [ValidateSet('latte', 'frappe', 'macchiato', 'mocha')]
         [string]$Flavor = "frappe"
     )
 
