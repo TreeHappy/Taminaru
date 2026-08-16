@@ -25,6 +25,7 @@
             },
             "extensions": [
                 "ms-vscode.powershell",
+                "Catppuccin.catppuccin-vsc"
             ]
         }
     },
