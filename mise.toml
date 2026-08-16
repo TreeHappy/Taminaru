@@ -20,3 +20,4 @@ zoxide = "latest"
 [settings]
 experimental = true
 lockfile = true
+trusted_config_paths = ["/"]

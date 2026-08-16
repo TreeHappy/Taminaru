@@ -4,6 +4,7 @@
 #
 # Provisions a fresh machine (tested on Ubuntu): installs mise (if missing),
 # provisions every tool from mise.toml/mise.lock (including pwsh itself),
+# sets mise.toml as the global mise config so tools work from anywhere,
 # symlinks config/<tool>/ into ~/.config/<tool>/ so the repo stays the single
 # source of truth, wires mise activation into the pwsh profile, and applies the
 # default catppuccin theme. Idempotent and safe to re-run.
@@ -46,9 +47,17 @@ fi
 log "Installing tools from mise.toml..."
 (cd "$REPO_DIR" && "$MISE_BIN" install)
 
-# 2b. Trust this repo's mise.toml so the mise shims work from anywhere
-#     (the shims resolve tools via the config; untrusted configs are refused).
-(cd "$REPO_DIR" && "$MISE_BIN" trust)
+# 2b. Set this repo's mise.toml as the GLOBAL mise config so every tool is
+#     available from anywhere (symlink keeps the repo the single source of truth).
+MISE_GLOBAL_DIR="$HOME/.config/mise"
+MISE_GLOBAL="$MISE_GLOBAL_DIR/config.toml"
+mkdir -p "$MISE_GLOBAL_DIR"
+if [ -e "$MISE_GLOBAL" ] && [ ! -L "$MISE_GLOBAL" ]; then
+  warn "$MISE_GLOBAL exists and is not a symlink; moving to ${MISE_GLOBAL}.bak"
+  mv "$MISE_GLOBAL" "${MISE_GLOBAL}.bak"
+fi
+ln -sf "$REPO_DIR/mise.toml" "$MISE_GLOBAL"
+log "global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
 
 # 3. Symlink configs into ~/.config
 SKIP_DIRS="winget git"
