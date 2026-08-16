@@ -224,8 +224,15 @@ mkdir -p "$ATUIN_DIR"
 cat > "$ATUIN_DIR/config.toml" <<'EOF'
 # atuin config (managed by scripts/bootstrap.sh)
 db_path = "~/.local/share/atuin/history.db"
+
+[ai]
+enabled = true
+
+[ai.opening]
+send_cwd = true
+send_last_command = true
 EOF
-log "🗄️  wrote $ATUIN_DIR/config.toml (sqlite backend)"
+log "🗄️  wrote $ATUIN_DIR/config.toml (sqlite backend + ai enabled)"
 
 # 5. pwsh: mise activation + profile wiring (managed files, idempotent)
 PW_DIR="$CONFIG_DIR/powershell"
