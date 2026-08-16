@@ -48,16 +48,3 @@ There is also a CLI wrapper for bash/bootstrap:
 pwsh ./scripts/theme.ps1            # default: frappe
 pwsh ./scripts/theme.ps1 mocha
 ```
-
-### GitHub Codespaces
-
-The repo ships a `.devcontainer` (Ubuntu 26, all tools baked in via mise, pwsh
-as the default shell, sshd enabled). Open it in Codespaces and the bootstrap
-runs automatically on startup:
-
-* Click **Code > Codespaces > Create codespace on main**.
-* Wait for it to build; `postCreateCommand` runs `scripts/bootstrap.sh` once the
-  container starts (installs + themes, no-op for the baked toolchain).
-* The terminal opens in pwsh with the tools on `PATH`. Connect over SSH with the
-  sshd feature if you prefer.
-
