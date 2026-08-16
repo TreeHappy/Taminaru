@@ -26,8 +26,6 @@ RUN chown -R vscode:vscode /workspaces/Taminaru
 USER vscode
 ENV MISE_DATA_DIR="/home/vscode/.local/share/mise" \
     PATH="/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:$PATH"
-RUN bash /workspaces/Taminaru/scripts/bootstrap.sh \
-    && ln -sfn "$(mise where powershell)/pwsh" "$HOME/.local/bin/pwsh"
 
 # Make pwsh the default shell (needs to be in /etc/shells first).
 USER root
