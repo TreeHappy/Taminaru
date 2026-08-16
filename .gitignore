@@ -1,0 +1,8 @@
+.DS_Store
+*.swp
+*.tmp
+*.lock.toml.bak
+Thumbs.db
+
+# carapace generates these bin shims (absolute paths) from specs/*.yaml
+config/carapace/bin/

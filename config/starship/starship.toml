@@ -1,24 +1,25 @@
-# format = """$all"""
+# Catppuccin Frappe palette
+# Managed by scripts/theme.ps1
 
 [character]
-success_symbol = "[ 🎏](bold green)"
-error_symbol = "[ 👹](bold red)"
+success_symbol = "[ 🎏](bold #a6d189)"
+error_symbol = "[ 👹](bold #e78284)"
 [git_branch]
 symbol = "🌿 "
-style = "bold yellow"
+style = "bold #e5c890"
 [time]
 format = "%H:%M:%S"
-style = "bold blue"
+style = "bold #8caaee"
 [username]
-style_user = "bold green"
-style_root = "bold red"
+style_user = "bold #a6d189"
+style_root = "bold #e78284"
 format = "[$user]($style)"
 disabled = false
 [hostname]
 ssh_only = true
-format = "[@$hostname](bold green)"
+format = "[@$hostname](bold #a6d189)"
 [directory]
-style = "bold green"
+style = "bold #a6d189"
 format = "[$path]($style) "
 truncation_length = 3
 truncation_symbol = "…/"
@@ -33,9 +34,8 @@ modified = ""
 staged = "✓"
 renamed = "🗘"
 deleted = ""
-style = "bold red"
+style = "bold #e78284"
 [docker_context]
 symbol = " 🐳 "
-style = "bold blue"
+style = "bold #8caaee"
 format = "[$symbol$context]($style)"
-

@@ -1,24 +1,27 @@
 {
-    "name": "Arch Dev Container",
+    "name": "Taminaru Codespaces",
     "build": {
-        "dockerfile": "Dockerfile_Alpine"
+        "dockerfile": "Dockerfile"
     },
     "remoteUser": "taminaru",
     "containerEnv": {
-        "SHELL": "/usr/bin/zsh"
+        "SHELL": "/home/taminaru/.local/bin/pwsh",
+        "PATH": "/home/taminaru/.local/bin:/home/taminaru/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     },
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.defaultProfile.linux": "zsh",
-                "terminal.integrated.automationShell.linux": "zsh"
+                "terminal.integrated.defaultProfile.linux": "pwsh",
+                "terminal.integrated.automationShell.linux": "/bin/bash"
             },
             "extensions": [
+                "ms-vscode.powershell",
                 "Marlodev.ganbaru"
             ]
         }
     },
     "features": {
         "ghcr.io/devcontainers/features/sshd:1": {}
-    }
+    },
+    "postCreateCommand": "bash ${containerWorkspaceFolder}/scripts/bootstrap.sh"
 }

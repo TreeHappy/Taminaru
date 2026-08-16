@@ -1,4 +1,3 @@
-
 # Packagemanager
 
 There are three possible options for package managers under windows.
@@ -30,5 +29,10 @@ There are three possible options for package managers under windows.
 
 ## mise-en-place
 
-* https://mise.jdx.dev/core-tools.html
+Used for **all CLI / dev tools**. This repo's
+`mise.toml` declares the toolchain (opencode, neovim, starship, powershell, bat, eza,
+fzf, yazi, vivid, ...), and `mise.lock` pins exact versions for reproducibility.
 
+* https://mise.jdx.dev/core-tools.html
+* Tools install per-user into `~/.local/share/mise`, no sudo needed.
+* Windows support is partial - that is why winget stays for Windows-only tooling.

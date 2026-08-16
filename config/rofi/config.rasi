@@ -1,7 +1,7 @@
-// @import "catppuccin-latte"
 // @import "catppuccin-frappe"
-// @import "catppuccin-macchiato"
-@import "catppuccin-mocha"
+// @import "catppuccin-frappe"
+// @import "catppuccin-frappe"
+@import "catppuccin-frappe"
 
 * {
   selected-active-foreground:  @background;
