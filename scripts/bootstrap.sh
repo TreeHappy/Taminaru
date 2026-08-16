@@ -27,9 +27,9 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
 fi
 
 # Set environment variables for non-interactive installation
+export DEBIAN_FRONTEND="noninteractive"
 export MISE_TRUSTED_CONFIG_PATHS="/"
 export MISE_SYSTEM_DEPS="auto"
-export DEBIAN_FRONTEND=noninteractive
 
 # 1. Install mise if missing
 teractive
