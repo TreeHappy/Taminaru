@@ -32,6 +32,7 @@ uv = "latest"
 vivid = "latest"
 yazi = "latest"
 zoxide = "latest"
+"aqua:fish-shell/fish-shell" = "latest"
 
 [settings]
 experimental = true

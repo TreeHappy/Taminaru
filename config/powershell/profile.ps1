@@ -1,6 +1,8 @@
 # --- Taminaru managed: activate mise before any tool init ---
 if (Test-Path (Join-Path $PSScriptRoot "mise.ps1")) { . (Join-Path $PSScriptRoot "mise.ps1") }
 
+# pwsh keeps its own atuin history DB (separate from fish)
+$env:ATUIN_DB_PATH = Join-Path $env:HOME ".local/share/atuin/pwsh/history.db"
 if (Get-Command atuin -ErrorAction SilentlyContinue) { atuin init powershell | Out-String | Invoke-Expression }
 
 # --- Atuin AI: '?' on an empty prompt (managed by Taminaru) ---
