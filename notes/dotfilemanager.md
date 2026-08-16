@@ -1,9 +1,0 @@
-
-# Dotfilemanager
-
-## Chezmoi
-
-### Pro
-
-### Con
-

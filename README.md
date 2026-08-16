@@ -27,13 +27,7 @@ On a fresh Ubuntu machine (bash):
 bash scripts/bootstrap.sh
 ```
 
-On Windows (PowerShell):
-
-```powershell
-pwsh ./scripts/bootstrap.ps1
-```
-
-Both are idempotent and safe to re-run.
+It is idempotent and safe to re-run.
 
 ### Theme switcher
 
@@ -51,8 +45,6 @@ There is also a CLI wrapper for bash/bootstrap:
 pwsh ./scripts/theme.ps1            # default: frappe
 pwsh ./scripts/theme.ps1 mocha
 ```
-
-See [notes/theme.md](notes/theme.md) for details on how the theming works.
 
 ### GitHub Codespaces
 

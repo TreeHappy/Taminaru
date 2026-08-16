@@ -1,5 +1,0 @@
-
-# Vim Selection
-
-* multi edit
-
