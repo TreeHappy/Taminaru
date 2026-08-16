@@ -1,7 +1,8 @@
 {
     "name": "Taminaru Codespaces",
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": ".."
     },
     "remoteUser": "taminaru",
     "containerEnv": {
