@@ -2,16 +2,30 @@
     "name": "Taminaru Codespaces",
     "build": {
         "dockerfile": "Dockerfile",
-        "context": ".."
+        "context": "..",
+        "args": {
+            "VARIANT": "ubuntu"
+        }
     },
-    "remoteUser": "taminaru",
+    "remoteUser": "vscode",
     "containerEnv": {
-        "SHELL": "/home/taminaru/.local/bin/pwsh",
-        "PATH": "/home/taminaru/.local/bin:/home/taminaru/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        "SHELL": "/home/vscode/.local/bin/pwsh",
+        "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     },
+    "features": {
+        "ghcr.io/devcontainers/features/sshd:1": {}
+    },
+    "forwardPorts": [
+        2222
+    ],
     "customizations": {
         "vscode": {
             "settings": {
+                "terminal.integrated.profiles.linux": {
+                    "pwsh": {
+                        "path": "/home/vscode/.local/bin/pwsh"
+                    }
+                },
                 "terminal.integrated.defaultProfile.linux": "pwsh",
                 "terminal.integrated.automationShell.linux": "/bin/bash"
             },
@@ -20,9 +34,6 @@
                 "Marlodev.ganbaru"
             ]
         }
-    },
-    "features": {
-        "ghcr.io/devcontainers/features/sshd:1": {}
     },
     "postCreateCommand": "bash ${containerWorkspaceFolder}/scripts/bootstrap.sh"
 }

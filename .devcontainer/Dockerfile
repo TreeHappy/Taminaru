@@ -1,49 +1,36 @@
 # Taminaru Codespaces devcontainer
 #
-# Ubuntu 26 (Resolute) - the official Ubuntu "Core"-derived minimal image.
-# Every tool (incl. pwsh) is provisioned by mise (see mise.toml / mise.lock)
-# instead of being baked in by hand, so the toolchain stays declarative.
+# Based on the official devcontainers ubuntu template:
+#   https://github.com/devcontainers/templates/tree/main/src/ubuntu
+# Base image: mcr.microsoft.com/devcontainers/base:ubuntu (resolute / Ubuntu
+# 26.04). Unlike a bare `ubuntu:26.04` this ships ca-certificates (so curl can
+# reach mise.run), plus git, curl, sudo, common-utils and the `vscode` user.
 #
-# The workspace is mounted at runtime, so configs/themes are applied by
-# scripts/bootstrap.sh (see devcontainer.json postCreateCommand), not here.
-FROM ubuntu:26.04
+# Everything from mise.toml/mise.lock (incl. pwsh) is provisioned by
+# scripts/bootstrap.sh, which is executed HERE so the whole toolchain and the
+# pwsh default shell are baked into the image (no wait at container start).
+ARG VARIANT="ubuntu"
+FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Only OS-level essentials; the rest comes from mise.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl \
-        git \
-        sudo \
+# ICU is required by PowerShell/.NET globalization. mise installs pwsh from a
+# tarball (no apt deps), so the system must provide libicu.
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Non-root user (matches devcontainer.json "remoteUser") with passwordless sudo.
-RUN useradd -m -s /bin/bash taminaru \
-    && echo 'taminaru ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/taminaru \
-    && chmod 0440 /etc/sudoers.d/taminaru
+# Bake only what the bootstrap needs, at its runtime mount path
+# (/workspaces/Taminaru is where Codespaces mounts the live repo).
+COPY mise.toml mise.lock scripts config /workspaces/Taminaru/
+RUN chown -R vscode:vscode /workspaces/Taminaru
 
-USER taminaru
-WORKDIR /home/taminaru
-
-# Install mise into the user's home.
-RUN curl -fsSL https://mise.run | sh
-
-ENV PATH="/home/taminaru/.local/bin:/home/taminaru/.local/share/mise/shims:$PATH" \
-    MISE_DATA_DIR="/home/taminaru/.local/share/mise"
-
-# Bake the entire toolchain into the image so container startup is instant.
-# (mise.lock pins exact versions; the workspace's mise.toml is used at runtime.)
-COPY --chown=taminaru:taminaru mise.toml mise.lock /tmp/mise/
-RUN mkdir -p "$MISE_DATA_DIR" \
-    && cd /tmp/mise \
-    && mise install \
-    && ln -sfn "$(mise where powershell)/pwsh" "$HOME/.local/bin/pwsh" \
-    && rm -rf /tmp/mise
+USER vscode
+ENV MISE_DATA_DIR="/home/vscode/.local/share/mise" \
+    PATH="/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:$PATH"
+RUN bash /workspaces/Taminaru/scripts/bootstrap.sh \
+    && ln -sfn "$(mise where powershell)/pwsh" "$HOME/.local/bin/pwsh"
 
 # Make pwsh the default shell (needs to be in /etc/shells first).
 USER root
-RUN echo '/home/taminaru/.local/bin/pwsh' >> /etc/shells \
-    && chsh -s /home/taminaru/.local/bin/pwsh taminaru
-USER taminaru
-
-CMD ["/home/taminaru/.local/bin/pwsh"]
+RUN echo '/home/vscode/.local/bin/pwsh' >> /etc/shells \
+    && chsh -s /home/vscode/.local/bin/pwsh vscode
+USER vscode
