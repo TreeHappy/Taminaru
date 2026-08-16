@@ -29,6 +29,24 @@ warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
 
 log "✨ Taminaru dotfiles bootstrap — sit back, we've got this"
 
+# 0. apt prerequisites: install everything apt can provide up front so every
+#    later check in this script sees real state. apt-get is idempotent, so
+#    re-runs are no-ops. As root we don't need sudo; otherwise sudo must
+#    already be installed (see README.md).
+export DEBIAN_FRONTEND="noninteractive"
+APT_GET="apt-get"
+if [ "$(id -u)" -ne 0 ]; then
+  if ! command -v sudo >/dev/null 2>&1; then
+    warn "sudo is missing — as root, run: apt-get install -y curl git sudo"
+    exit 1
+  fi
+  APT_GET="sudo apt-get"
+fi
+log "📦 Installing apt packages (curl git sudo unzip build-essential libicu-dev ...)..."
+$APT_GET update
+$APT_GET install -y curl git sudo unzip ca-certificates libicu-dev \
+  libssl3 libgssapi-krb5-2 zlib1g build-essential
+
 # 0a. Fresh install: when running as root, create a non-root user so we don't
 #     have to use root, then re-run the rest of this script as that user.
 if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
@@ -56,20 +74,7 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   exit $?
 fi
 
-# 0. apt prerequisites (curl/git/sudo/unzip/ca-certificates/build-essential for
-#    mise + nvim treesitter; libicu-dev/libssl3/libgssapi-krb5-2/zlib1g for pwsh)
-#    - only when missing
-if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 \
-   || ! command -v sudo >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1 \
-   || ! dpkg -s libicu-dev >/dev/null 2>&1 || ! dpkg -s build-essential >/dev/null 2>&1; then
-  log "📦 Installing curl + git + sudo + unzip + build tools via apt..."
-  sudo apt-get update
-  sudo apt-get install -y curl git sudo unzip ca-certificates libicu-dev \
-    libssl3 libgssapi-krb5-2 zlib1g build-essential
-fi
-
 # Set environment variables for non-interactive installation
-export DEBIAN_FRONTEND="noninteractive"
 export MISE_TRUSTED_CONFIG_PATHS="/"
 export MISE_SYSTEM_DEPS="auto"
 

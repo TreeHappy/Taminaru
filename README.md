@@ -13,6 +13,8 @@ Everything is driven from PowerShell. All tools are provisioned with [mise](http
 
 ### Prerequisites
 
+* `curl`, `git`, `sudo` - must be installed before bootstrapping (the one-liner
+  below is fetched with curl, and the bootstrap uses git + sudo throughout)
 * [mise](https://mise.jdx.dev/getting-started) - the bootstrap installs it automatically if missing
 * PowerShell 7+ (`pwsh`) to run the scripts - only needed for the first bootstrap; after that pwsh itself is provisioned and pinned via mise (see `mise.toml`)
 
@@ -24,7 +26,27 @@ harnesses), symlinks every `config/*` directory into
 (`pi`, `opencode`, `mammouth`) with catppuccin, and applies the default theme
 (frappe).
 
-On a fresh Ubuntu machine (bash):
+`curl`, `git` and `sudo` can't be installed by the bootstrap, so install them
+first. From a root shell (a fresh Ubuntu install drops you into root):
+
+```bash
+apt-get update
+apt-get install -y curl git sudo
+```
+
+Then provision everything with a single command (mise-style):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/install.sh | bash
+```
+
+The one-liner forwards `FLAVOR` and `TAMINARU_USER`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/install.sh | FLAVOR=mocha TAMINARU_USER=bob bash
+```
+
+Or, if you already have the repo cloned, run the bootstrap directly:
 
 ```bash
 bash scripts/bootstrap.sh
