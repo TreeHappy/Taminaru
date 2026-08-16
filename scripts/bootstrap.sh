@@ -215,6 +215,20 @@ if [ -f "$CONFIG_DIR/pi/mcp.json" ]; then
 fi
 log "🔗 linked ~/.pi/agent/{themes,settings.json,mcp.json} -> $CONFIG_DIR/pi"
 
+# 3d. Install pi packages (coding-agent plugins/extensions) declared in the
+#     "packages" array of the (symlinked) settings.json. `pi install` is
+#     idempotent: it ensures each package is present, keeps the entry in the
+#     repo's settings.json in sync, and runs npm install for its dependencies.
+#     pi itself is provisioned by mise (see mise.toml), so we run it via mise x.
+PI_PACKAGES="$(grep -oE '"npm:[^"]+"' "$HOME/.pi/agent/settings.json" 2>/dev/null | tr -d '"' || true)"
+for pkg in $PI_PACKAGES; do
+  if "$MISE_BIN" x pi -- pi install "$pkg" >/dev/null 2>&1; then
+    log "🧩 pi package ready: $pkg"
+  else
+    warn "could not install pi package: $pkg"
+  fi
+done
+
 # 4. starship lives at ~/.config/starship.toml (not a subdirectory)
 STARSHIP_TARGET="$HOME/.config/starship.toml"
 if [ ! -e "$STARSHIP_TARGET" ] && [ -f "$CONFIG_DIR/starship/starship.toml" ]; then

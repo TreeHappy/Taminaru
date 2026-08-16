@@ -2,6 +2,10 @@
   "theme": "catppuccin-frappe",
   "lastChangelogVersion": "0.84.2",
   "packages": [
-    "npm:pi-mcp-adapter"
-  ]
+    "npm:pi-mcp-adapter",
+    "npm:@maxpaulus/pi-cline"
+  ],
+  "defaultProvider": "cline",
+  "defaultModel": "deepseek/deepseek-v4-flash",
+  "defaultThinkingLevel": "medium"
 }
