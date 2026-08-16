@@ -1,5 +1,13 @@
 # TODO
 
+## Done
+
+* MCP support in pi: servers for gh, atuin, carapace, npx refs, fetch, context7
+* pi packages installed in bootstrap (`pi-mcp-adapter`, `@maxpaulus/pi-cline`) + cline as default harness
+* catppuccin pi themes: tint tool-box block backgrounds per flavor
+
+## Open
+
 * install virtual disks
   * mise packages
   * Taminaru
