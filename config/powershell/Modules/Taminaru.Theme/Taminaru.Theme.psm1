@@ -270,6 +270,15 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         Write-Log "✍️  nvim: catppuccin.lua -> $Flavor"
     }
 
+    # AstroUI colorscheme (nvim/lua/plugins/astroui.lua)
+    $NvimAstroui = Join-Path $ConfigDir "nvim/lua/plugins/astroui.lua"
+    if (Test-Path $NvimAstroui) {
+        $content = Get-Content -Raw $NvimAstroui
+        $content = $content -replace 'colorscheme = "catppuccin-[a-z]*"', "colorscheme = `"catppuccin-$Flavor`""
+        Set-Content -Path $NvimAstroui -Value $content -NoNewline -Encoding utf8NoBOM
+        Write-Log "✍️  nvim: astroui.lua -> catppuccin-$Flavor"
+    }
+
     # AI coding harnesses (pi, opencode, mammouth). opencode/mammouth ship no
     # built-in latte, so latte falls back to the default catppuccin theme.
     $HarnessThemeMap = @{
