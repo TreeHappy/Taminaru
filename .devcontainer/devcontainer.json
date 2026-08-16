@@ -9,6 +9,8 @@
     },
     "remoteUser": "vscode",
     "containerEnv": {
+        "MISE_TRUST_ALL": "1",
+        "DEBIAN_FRONTEND": "noninteractive",
         "SHELL": "/home/vscode/.local/bin/pwsh",
         "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     },
