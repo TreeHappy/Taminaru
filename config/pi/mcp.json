@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "github": { "command": "gh", "args": ["mcp"] },
+    "atuin": { "command": "atuin", "args": ["mcp"] },
+    "carapace": { "command": "carapace", "args": ["--mcp"] },
+    "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/taminaru"] },
+    "memory": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory"] },
+    "sequential-thinking": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"] },
+    "fetch": { "command": "uvx", "args": ["--with", "mcp==1.4.0", "mcp-server-fetch"] },
+    "context7": { "command": "npx", "args": ["-y", "@upstash/context7-mcp"] }
+  }
+}

@@ -210,7 +210,10 @@ for theme in "$CONFIG_DIR/pi/themes/"*.json; do
   ln -sf "$theme" "$HOME/.pi/agent/themes/$(basename "$theme")"
 done
 ln -sf "$CONFIG_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
-log "🔗 linked ~/.pi/agent/{themes,settings.json} -> $CONFIG_DIR/pi"
+if [ -f "$CONFIG_DIR/pi/mcp.json" ]; then
+  ln -sf "$CONFIG_DIR/pi/mcp.json" "$HOME/.pi/agent/mcp.json"
+fi
+log "🔗 linked ~/.pi/agent/{themes,settings.json,mcp.json} -> $CONFIG_DIR/pi"
 
 # 4. starship lives at ~/.config/starship.toml (not a subdirectory)
 STARSHIP_TARGET="$HOME/.config/starship.toml"
