@@ -32,7 +32,6 @@ export MISE_TRUSTED_CONFIG_PATHS="/"
 export MISE_SYSTEM_DEPS="auto"
 
 # 1. Install mise if missing
-teractive
 if command -v mise >/dev/null 2>&1; then
   MISE_BIN="$(command -v mise)"
   log "mise already installed: $(mise --version)"
