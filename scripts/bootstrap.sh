@@ -195,8 +195,9 @@ for name in rofi wofi waybar hypr; do
 done
 
 # 3c. AI coding harness themes (managed files, idempotent). opencode/mammouth
-#     manage their own config dirs, so only tui.json is linked; pi themes and
-#     settings live under ~/.pi/agent.
+#     manage their own config dirs, so only tui.json is linked. pi settings live
+#     under ~/.pi/agent; its catppuccin themes come from the
+#     @firstpick/pi-themes-bundle package (installed in 3d), not local files.
 mkdir -p "$HOME/.config/opencode"
 ln -sf "$CONFIG_DIR/opencode/tui.json" "$HOME/.config/opencode/tui.json"
 log "🔗 linked ~/.config/opencode/tui.json -> $CONFIG_DIR/opencode/tui.json"
@@ -205,15 +206,11 @@ mkdir -p "$HOME/.config/mammouth"
 ln -sf "$CONFIG_DIR/mammouth/tui.json" "$HOME/.config/mammouth/tui.json"
 log "🔗 linked ~/.config/mammouth/tui.json -> $CONFIG_DIR/mammouth/tui.json"
 
-mkdir -p "$HOME/.pi/agent/themes"
-for theme in "$CONFIG_DIR/pi/themes/"*.json; do
-  ln -sf "$theme" "$HOME/.pi/agent/themes/$(basename "$theme")"
-done
 ln -sf "$CONFIG_DIR/pi/settings.json" "$HOME/.pi/agent/settings.json"
 if [ -f "$CONFIG_DIR/pi/mcp.json" ]; then
   ln -sf "$CONFIG_DIR/pi/mcp.json" "$HOME/.pi/agent/mcp.json"
 fi
-log "🔗 linked ~/.pi/agent/{themes,settings.json,mcp.json} -> $CONFIG_DIR/pi"
+log "🔗 linked ~/.pi/agent/{settings.json,mcp.json} -> $CONFIG_DIR/pi"
 
 # 3d. Install pi packages (coding-agent plugins/extensions) declared in the
 #     "packages" array of the (symlinked) settings.json. `pi install` is

@@ -103,51 +103,48 @@ theme's `name` field exactly.
 | background        | PNG URL (asset not shipped)        | solid `#11111b` (pageBg)          |
 | palette fidelity  | loose/approximate                  | faithful to official Catppuccin   |
 
-## 5. Decision & recommended approach
+## 5. Decision — plugin-only (adopted)
 
-**The bundle is not currently used, so the task technically says to adopt it.**
-However, because the bundle (a) omits `frappe`/`macchiato`, (b) drops the current
-`frappe` default, and (c) is visually different + has the missing-asset issue,
-adopting it as a full replacement would **regress** the current setup.
+**Pi is now themed entirely by the bundle.** The local `config/pi/themes/*.json`
+files were deleted, and pi's default is `catppuccin-mocha`, which the bundle
+ships. The `Taminaru.Theme` module sets only the theme *name* in
+`config/pi/settings.json` — it writes no hex values anywhere (it never did for
+pi) — and falls back to `catppuccin-mocha` for `frappe`/`macchiato`, since the
+bundle provides only `catppuccin-latte` and `catppuccin-mocha`.
 
-Recommended path (non-destructive, additive):
+Mapping used by `Set-TaminaruTheme` for pi:
 
-1. Add `"npm:@firstpick/pi-themes-bundle"` to the `packages` array in
-   `config/pi/settings.json`. §3d of `bootstrap.sh` already installs every entry
-   in that array, so **no change to `bootstrap.sh` is strictly required** for the
-   extra themes to appear.
-2. **Keep** the local `config/pi/themes/*.json` so `catppuccin-frappe` /
-   `catppuccin-macchiato` (and the faithful look) keep working. Local files and
-   bundle themes coexist; Pi names themes by their `name` field, no collision.
-3. **Leave `"theme": "catppuccin-frappe"`** untouched (it resolves via the local
-   files). Only if the user wants the bundle's rendering should the theme name be
-   changed to `catppuccin-mocha`, and then only with the caveat about the
-   missing PNG background.
+| Flavor    | pi theme            |
+|-----------|---------------------|
+| latte     | `catppuccin-latte`  |
+| frappe    | `catppuccin-mocha`  |
+| macchiato | `catppuccin-mocha`  |
+| mocha     | `catppuccin-mocha`  |
 
-If instead a full switch is desired, the follow-up edits are:
-- `config/pi/settings.json`: `"theme": "catppuccin-mocha"` + add bundle to
-  `packages`.
-- Optionally stop symlinking `config/pi/themes/*.json` in `bootstrap.sh` §3c and
-  delete the local JSON files. (Not recommended — loses `frappe`/`macchiato`.)
+Trade-off: the terminal dotfiles (ghostty, starship, etc.) can stay on any
+flavor, but **pi supports only latte and mocha** now. If a really dark pi theme
+is wanted, `mocha` is the option. (Known bundle quirk: the `catppuccin-mocha`
+theme references a background PNG that is not shipped — see §4a.3.)
 
 ## 6. Verification steps (after any change)
 
-- `pi list` shows the bundle installed.
-- `~/.pi/agent/settings.json` still reflects the repo's `config/pi/settings.json`
-  (it's a symlink created by §3c).
-- Re-run `bash scripts/bootstrap.sh` and confirm:
-  - §3d logs `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`.
-  - §3c logs the theme symlinks.
-- In Pi, `/settings` lists both the local Catppuccin themes and the bundle's.
-- `catppuccin-frappe` still renders (resolves from local files).
+- `pi list` shows `npm:@firstpick/pi-themes-bundle` installed.
+- `~/.pi/agent/settings.json` is a symlink to the repo's
+  `config/pi/settings.json` and reads `"theme": "catppuccin-mocha"`.
+- `config/pi/themes/` no longer exists; `~/.pi/agent/themes/` is not created by
+  the bootstrap.
+- Re-run `bash scripts/bootstrap.sh` and confirm §3d logs
+  `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and §3c links only
+  `settings.json`/`mcp.json`.
+- Restart pi. In `/settings`, `catppuccin-mocha` is the active theme and renders.
 
 ## 7. Key files
 
 | Path                          | Role                                        |
 |-------------------------------|---------------------------------------------|
 | `scripts/bootstrap.sh`        | §3c themes/settings symlinks; §3d pkg install |
-| `config/pi/settings.json`     | `theme`, `packages` (drives §3d installs)   |
-| `config/pi/themes/*.json`     | local Pi Catppuccin themes (keep)           |
+| `config/pi/settings.json`     | `theme` (mocha default), `packages` (drives §3d installs) |
+| ~~`config/pi/themes/*.json`~~  | removed — pi is plugin-only now |
 | `scripts/theme.ps1`           | PowerShell terminal theme switcher (unrelated to Pi UI) |
 | `config/themes/*.tmTheme`     | TextMate themes for another tool (not Pi)   |
 | `~/.pi/agent/settings.json`   | live settings (symlinked to the repo)       |
