@@ -62,6 +62,12 @@ how passwordless sudo is set up and verified.
 
 It is idempotent and safe to re-run.
 
+Running the tools from a container? `podman exec ... pwsh` won't find pwsh
+because exec skips shell startup (so mise is never activated). `podman exec -u
+taminaru -it <container> bash` opens an interactive shell that activates mise
+and starts pwsh — see
+[`documentation/podman-exec.md`](documentation/podman-exec.md).
+
 ### Theme switcher
 
 The theme switcher is a pwsh module (`Taminaru.Theme`) that is loaded from your

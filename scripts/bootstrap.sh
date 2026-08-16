@@ -232,7 +232,8 @@ else
 fi
 log "⚡ wrote $PW_DIR/mise.ps1 + ensured managed block in $PROFILE"
 
-# 5a. bash: mise activation so every tool (incl. pwsh) is on PATH
+# 5a. bash: mise activation + pwsh handoff so tools are on PATH and an
+#     interactive bash lands in $HOME and starts pwsh
 BASH_DIR="$CONFIG_DIR/bash"
 mkdir -p "$BASH_DIR"
 cat > "$BASH_DIR/mise.sh" <<'EOF'
@@ -244,21 +245,33 @@ elif [ -x "$HOME/.local/bin/mise" ]; then
     eval "$("$HOME/.local/bin/mise" activate bash)"
 fi
 EOF
+cat > "$BASH_DIR/pwsh.sh" <<'EOF'
+# start pwsh from an interactive bash, in $HOME (managed by scripts/bootstrap.sh)
+if command -v pwsh >/dev/null 2>&1 && [[ $- == *i* ]]; then
+    cd "$HOME"
+    exec pwsh
+fi
+EOF
 
 BASHRC="$HOME/.bashrc"
 write_bash_managed_block() {
   printf '%s\n' \
     '# --- Taminaru managed ---' \
     '[ -f "$HOME/.config/bash/mise.sh" ] && . "$HOME/.config/bash/mise.sh"' \
+    '[ -f "$HOME/.config/bash/pwsh.sh" ] && . "$HOME/.config/bash/pwsh.sh"' \
     '# --- /Taminaru managed ---'
 }
 if [ ! -f "$BASHRC" ]; then
   touch "$BASHRC"
 fi
-if ! grep -q "# --- Taminaru managed ---" "$BASHRC"; then
-  write_bash_managed_block >> "$BASHRC"
+if grep -q "# --- Taminaru managed ---" "$BASHRC"; then
+  awk '/^# --- Taminaru managed ---$/{skip=1; next} /^# --- \/Taminaru managed ---$/{skip=0; next} !skip' "$BASHRC" > "$BASHRC.tmp" && mv "$BASHRC.tmp" "$BASHRC"
 fi
-log "⚡ wrote $BASH_DIR/mise.sh + ensured managed block in $BASHRC"
+if [ -s "$BASHRC" ] && [ -n "$(tail -c1 "$BASHRC")" ]; then
+  printf '\n' >> "$BASHRC"
+fi
+write_bash_managed_block >> "$BASHRC"
+log "⚡ wrote $BASH_DIR/mise.sh + $BASH_DIR/pwsh.sh + ensured managed block in $BASHRC"
 
 # 5b. Switch the login shell to pwsh (needs pwsh listed in /etc/shells first)
 MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
