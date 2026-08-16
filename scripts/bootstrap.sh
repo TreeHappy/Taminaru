@@ -40,6 +40,10 @@ if [ "$(id -u)" -ne 0 ]; then
     warn "sudo is missing — as root, run: apt-get install -y curl git sudo"
     exit 1
   fi
+  if ! sudo -n true 2>/dev/null; then
+    warn "$(id -un) needs passwordless sudo — as root, run: echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$(id -un) && chmod 440 /etc/sudoers.d/$(id -un)"
+    exit 1
+  fi
   APT_GET="sudo apt-get"
 fi
 log "📦 Installing apt packages (curl git sudo unzip build-essential libicu-dev ...)..."
@@ -53,12 +57,16 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   if ! id "$TAMINARU_USER" >/dev/null 2>&1; then
     log "👤 Creating user $TAMINARU_USER (passwordless, NOPASSWD sudo)..."
     useradd -m -s /bin/bash "$TAMINARU_USER"
-    SUDOERS="/etc/sudoers.d/$TAMINARU_USER"
+  else
+    log "👤 user $TAMINARU_USER already exists"
+  fi
+
+  SUDOERS="/etc/sudoers.d/$TAMINARU_USER"
+  if [ ! -f "$SUDOERS" ] || ! grep -qE "^$TAMINARU_USER[[:space:]]" "$SUDOERS"; then
+    log "🔒 Ensuring $TAMINARU_USER has passwordless sudo..."
     printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TAMINARU_USER" > "$SUDOERS"
     chmod 440 "$SUDOERS"
     visudo -cf "$SUDOERS"
-  else
-    log "👤 user $TAMINARU_USER already exists"
   fi
 
   USER_HOME="$(getent passwd "$TAMINARU_USER" | cut -d: -f6)"
@@ -213,16 +221,24 @@ if [ ! -x "$PW_SHELL" ]; then
   PW_SHELL="$("$MISE_BIN" which powershell)"
 fi
 if [ -x "$PW_SHELL" ]; then
+  SHELL_READY=1
   if ! grep -qxF "$PW_SHELL" /etc/shells 2>/dev/null; then
     log "🔒 Adding $PW_SHELL to /etc/shells..."
-    echo "$PW_SHELL" | sudo tee -a /etc/shells >/dev/null
+    if ! echo "$PW_SHELL" | sudo tee -a /etc/shells >/dev/null; then
+      warn "could not add $PW_SHELL to /etc/shells — as root, run: echo '$PW_SHELL' >> /etc/shells"
+      SHELL_READY=0
+    fi
   fi
-  CURRENT_SHELL="$(getent passwd "${USER:-$(id -un)}" | cut -d: -f7)"
-  if [ "$CURRENT_SHELL" != "$PW_SHELL" ]; then
-    log "🔁 Changing login shell to $PW_SHELL (log out/in to take effect)..."
-    sudo chsh -s "$PW_SHELL" "${USER:-$(id -un)}"
-  else
-    log "✅ login shell is already $PW_SHELL"
+  if [ "$SHELL_READY" = 1 ]; then
+    CURRENT_SHELL="$(getent passwd "${USER:-$(id -un)}" | cut -d: -f7)"
+    if [ "$CURRENT_SHELL" != "$PW_SHELL" ]; then
+      log "🔁 Changing login shell to $PW_SHELL (log out/in to take effect)..."
+      if ! sudo chsh -s "$PW_SHELL" "${USER:-$(id -un)}"; then
+        warn "could not change login shell — as root, run: chsh -s '$PW_SHELL' '${USER:-$(id -un)}'"
+      fi
+    else
+      log "✅ login shell is already $PW_SHELL"
+    fi
   fi
 else
   warn "pwsh not found; skipping login shell change"
