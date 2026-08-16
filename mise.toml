@@ -11,6 +11,7 @@ fastfetch = "latest"
 fd = "latest"
 fzf = "latest"
 gum = "latest"
+jj = "latest"
 mammouth = { version = "latest", matching = "mammouth" }
 neovim = "latest"
 opencode = "latest"
