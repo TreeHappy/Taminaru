@@ -1,3 +1,5 @@
+if (Get-Command atuin -ErrorAction SilentlyContinue) { atuin init powershell | Out-String | Invoke-Expression }
+
 $env:EDITOR = "nvim"
 $env:YAZI_CONFIG_HOME = Join-Path $env:HOME ".config/yazi/"
 $env:XDG_CONFIG_HOME = Join-Path $env:HOME ".config"

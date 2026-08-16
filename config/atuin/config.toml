@@ -1,0 +1,5 @@
+# atuin config (managed by scripts/bootstrap.sh)
+db_path = "~/.local/share/atuin/history.db"
+
+[theme]
+name = "catppuccin-frappe-peach"

@@ -77,6 +77,15 @@ if [ ! -e "$STARSHIP_TARGET" ] && [ -f "$CONFIG_DIR/starship/starship.toml" ]; t
   log "linked ~/.config/starship.toml -> $CONFIG_DIR/starship/starship.toml"
 fi
 
+# 4b. atuin: force the local sqlite backend (managed file, idempotent)
+ATUIN_DIR="$CONFIG_DIR/atuin"
+mkdir -p "$ATUIN_DIR"
+cat > "$ATUIN_DIR/config.toml" <<'EOF'
+# atuin config (managed by scripts/bootstrap.sh)
+db_path = "~/.local/share/atuin/history.db"
+EOF
+log "wrote $ATUIN_DIR/config.toml (sqlite backend)"
+
 # 5. pwsh: mise activation + profile wiring (managed files, idempotent)
 PW_DIR="$CONFIG_DIR/powershell"
 mkdir -p "$PW_DIR"

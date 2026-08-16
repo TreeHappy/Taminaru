@@ -81,6 +81,17 @@ if (-not (Test-Path $StarshipTarget) -and (Test-Path $StarshipSrc)) {
     Write-Log "linked ~/.config/starship.toml -> $StarshipSrc"
 }
 
+# 4b. atuin: force the local sqlite backend (managed file, idempotent)
+$AtuinDir = Join-Path $ConfigDir "atuin"
+New-Item -ItemType Directory -Path $AtuinDir -Force | Out-Null
+$AtuinConfig = Join-Path $AtuinDir "config.toml"
+$AtuinBlock = @'
+# atuin config (managed by scripts/bootstrap.sh)
+db_path = "~/.local/share/atuin/history.db"
+'@
+Set-Content -Path $AtuinConfig -Value $AtuinBlock -Encoding utf8NoBOM
+Write-Log "wrote $AtuinConfig (sqlite backend)"
+
 # 5. Wire mise activation into pwsh (managed files, idempotent)
 $PwshDir = Join-Path $ConfigDir "powershell"
 New-Item -ItemType Directory -Path $PwshDir -Force | Out-Null
