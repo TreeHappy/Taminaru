@@ -1,3 +1,6 @@
+# --- Taminaru managed: activate mise before any tool init ---
+if (Test-Path (Join-Path $PSScriptRoot "mise.ps1")) { . (Join-Path $PSScriptRoot "mise.ps1") }
+
 if (Get-Command atuin -ErrorAction SilentlyContinue) { atuin init powershell | Out-String | Invoke-Expression }
 
 # --- Atuin AI: '?' on an empty prompt (managed by Taminaru) ---
@@ -45,13 +48,13 @@ if ($IsWindows) {
     $env:STARSHIP_CONFIG = "${env:USERPROFILE}\.config\starship\starship.toml"
 }
 
-Invoke-Expression (& { (zoxide init powershell | Out-String) })
-
 Set-PSReadLineOption -Colors @{ "Selection" = "`e[7m" }
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 carapace _carapace | Out-String | Invoke-Expression
 
 Invoke-Expression (&starship init powershell)
+
+Invoke-Expression (& { (zoxide init powershell | Out-String) })
 
 Set-Alias ls eza
 Set-Alias cat bat
@@ -65,7 +68,6 @@ if ($IsWindows) {
 
 # --- Taminaru managed ---
 if (Test-Path (Join-Path $PSScriptRoot "theme.ps1")) { . (Join-Path $PSScriptRoot "theme.ps1") }
-if (Test-Path (Join-Path $PSScriptRoot "mise.ps1"))  { . (Join-Path $PSScriptRoot "mise.ps1") }
 $taminaruTheme = Join-Path $PSScriptRoot "Modules/Taminaru.Theme/Taminaru.Theme.psm1"
 if (Test-Path $taminaruTheme) { Import-Module $taminaruTheme -Force }
 # --- /Taminaru managed ---
