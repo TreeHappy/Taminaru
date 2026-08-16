@@ -1,3 +1,6 @@
+[tool_alias]
+mammouth = "github:mammouth-ai/code"
+
 [tools]
 atuin = "latest"
 bat = "latest"
@@ -8,6 +11,7 @@ fastfetch = "latest"
 fd = "latest"
 fzf = "latest"
 gum = "latest"
+mammouth = { version = "latest", matching = "mammouth" }
 neovim = "latest"
 opencode = "latest"
 pi = "latest"

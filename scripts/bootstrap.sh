@@ -3,9 +3,8 @@
 # Taminaru dotfiles bootstrap (bash).
 #
 # Provisions a fresh machine (tested on Ubuntu): installs mise (if missing),
-# provisions every tool from mise.toml/mise.lock (including pwsh itself),
-# installs Mammouth Code (opencode fork) from code.mammouth.ai, sets mise.toml
-# as the global mise config so tools work from anywhere, symlinks
+# provisions every tool from mise.toml/mise.lock (including pwsh itself), sets
+# mise.toml as the global mise config so tools work from anywhere, symlinks
 # config/<tool>/ into ~/.config/<tool>/ so the repo stays the single source of
 # truth, wires mise activation into the pwsh profile, applies catppuccin themes
 # to the AI coding harnesses (pi/opencode/mammouth), and applies the default
@@ -61,14 +60,8 @@ fi
 ln -sf "$REPO_DIR/mise.toml" "$MISE_GLOBAL"
 log "global mise config: $MISE_GLOBAL -> $REPO_DIR/mise.toml"
 
-# 2c. Install Mammouth Code (opencode fork, not a mise tool)
-MAMMOUTH_BIN="$HOME/.mammouth/bin/mammouth"
-if [ -x "$MAMMOUTH_BIN" ]; then
-  log "mammouth already installed: $MAMMOUTH_BIN"
-else
-  log "Installing Mammouth Code (from code.mammouth.ai)..."
-  curl -fsSL https://code.mammouth.ai/install.sh | bash
-fi
+# 2c. Mammouth Code is provisioned via mise from github:mammouth-ai/code
+#     (see [tool_alias] in mise.toml)
 
 # 3. Symlink configs into ~/.config
 # (opencode/mammouth keep their full dirs self-managed; only tui.json is linked below)

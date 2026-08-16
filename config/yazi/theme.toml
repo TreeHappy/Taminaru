@@ -12,10 +12,6 @@ marker_cut      = { fg = "#e78284", bg = "#e78284" }
 marker_marked   = { fg = "#81c8be", bg = "#81c8be" }
 marker_selected = { fg = "#babbf1", bg = "#babbf1" }
 
-tab_active   = { fg = "#414559", bg = "#c6d0f5" }
-tab_inactive = { fg = "#c6d0f5", bg = "#51576d" }
-tab_width    = 1
-
 count_copied   = { fg = "#414559", bg = "#a6d189" }
 count_cut      = { fg = "#414559", bg = "#e78284" }
 count_selected = { fg = "#414559", bg = "#babbf1" }
@@ -24,6 +20,10 @@ border_symbol = "│"
 border_style  = { fg = "#838ba7" }
 
 syntect_theme = "~/.config/yazi/Catppuccin-frappe.tmTheme"
+
+[tabs]
+active   = { fg = "#414559", bg = "#c6d0f5" }
+inactive = { fg = "#c6d0f5", bg = "#51576d" }
 
 [mode]
 normal_main = { fg = "#414559", bg = "#babbf1", bold = true }
@@ -110,8 +110,8 @@ rules = [
 	{ mime = "application/{pdf,doc,rtf}", fg = "#a6d189" },
 
 	# Fallback
-	{ name = "*", fg = "#c6d0f5" },
-	{ name = "*/", fg = "#babbf1" }
+	{ url = "*", fg = "#c6d0f5" },
+	{ url = "*/", fg = "#babbf1" }
 ]
 
 [icon]

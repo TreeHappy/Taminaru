@@ -1,9 +1,5 @@
 if (Get-Command atuin -ErrorAction SilentlyContinue) { atuin init powershell | Out-String | Invoke-Expression }
 
-# Mammouth Code (installed by bootstrap to ~/.mammouth/bin)
-$mammouthBin = Join-Path $HOME ".mammouth/bin"
-if (Test-Path $mammouthBin) { $env:PATH = "$mammouthBin;$env:PATH" }
-
 $env:EDITOR = "nvim"
 $env:YAZI_CONFIG_HOME = Join-Path $env:HOME ".config/yazi/"
 $env:XDG_CONFIG_HOME = Join-Path $env:HOME ".config"
