@@ -26,7 +26,12 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
   sudo apt-get install -y curl git
 fi
 
+# Set environment variables for non-interactive installation
+export MISE_TRUST_ALL=1
+export DEBIAN_FRONTEND=nonin
+
 # 1. Install mise if missing
+teractive
 if command -v mise >/dev/null 2>&1; then
   MISE_BIN="$(command -v mise)"
   log "mise already installed: $(mise --version)"
