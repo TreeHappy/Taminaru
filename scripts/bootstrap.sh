@@ -56,12 +56,16 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   exit $?
 fi
 
-# 0. apt prerequisites (curl + git + libicu-dev, pwsh needs libicu) - only when missing
+# 0. apt prerequisites (curl/git/sudo/unzip/ca-certificates/build-essential for
+#    mise + nvim treesitter; libicu-dev/libssl3/libgssapi-krb5-2/zlib1g for pwsh)
+#    - only when missing
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 \
-   || ! dpkg -s libicu-dev >/dev/null 2>&1; then
-  log "📦 Installing curl + git + libicu-dev via apt..."
+   || ! command -v sudo >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1 \
+   || ! dpkg -s libicu-dev >/dev/null 2>&1 || ! dpkg -s build-essential >/dev/null 2>&1; then
+  log "📦 Installing curl + git + sudo + unzip + build tools via apt..."
   sudo apt-get update
-  sudo apt-get install -y curl git libicu-dev
+  sudo apt-get install -y curl git sudo unzip ca-certificates libicu-dev \
+    libssl3 libgssapi-krb5-2 zlib1g build-essential
 fi
 
 # Set environment variables for non-interactive installation
