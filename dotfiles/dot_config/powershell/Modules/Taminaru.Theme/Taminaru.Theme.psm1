@@ -308,7 +308,7 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
         macchiato = 'catppuccin-mocha'
         mocha     = 'catppuccin-mocha'
     }
-    $PiSettings = Join-Path $ConfigDir "pi/settings.json"
+    $PiSettings = Join-Path (Get-TaminaruRepoDir) "dotfiles/dot_pi/agent/settings.json"
     if (Test-Path $PiSettings) {
         & $SetHarnessTheme $PiSettings $PiThemeMap[$Flavor]
         Write-Log "🤖 pi: settings.json -> $($PiThemeMap[$Flavor])"

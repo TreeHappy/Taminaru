@@ -87,9 +87,9 @@ provisioned with `mise install`. Versions are pinned in `mise.lock`; see
 | yazi | 26.8.15 | terminal file manager | `aqua:sxyazi/yazi` |
 | zoxide | 0.10.0 | smarter `cd` | `aqua:ajeetdsouza/zoxide` |
 
-Each tool's config lives in `config/<tool>/` and is symlinked into
-`~/.config/<tool>/` by the bootstrap, so the repo stays the single source of
-truth.
+Each tool's config lives in `dotfiles/dot_config/<tool>/` (the chezmoi source)
+and is applied to `~/.config/<tool>/` as real files by the bootstrap via
+`chezmoi apply`, so the repo stays the single source of truth without symlinks.
 
 ## Layer 2 — conda packages (micromamba)
 
@@ -151,5 +151,6 @@ luarocks --version          # 3.13.0
 - `mise.lock` is auto-generated; don't edit by hand (see `mise-lock.md`).
 - The apt list and all managed files are written by `scripts/bootstrap.sh` —
   keep that script and this doc in sync when dependencies change.
-- Tools dropped from `mise.toml` leave stale `~/.config/<tool>` symlinks; the
-  bootstrap prunes them (`scripts/bootstrap.sh`).
+- Tools dropped from `mise.toml` are simply uninstalled; config without a
+  managing source file is left untouched (chezmoi only ever writes managed
+  paths), so nothing stale is left behind.
