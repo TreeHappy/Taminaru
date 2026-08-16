@@ -10,9 +10,9 @@
 # to the AI coding harnesses (pi/opencode/mammouth), and applies the default
 # catppuccin theme. Idempotent and safe to re-run.
 #
-# Each run also resets the nvim data dirs (~/.local/{share,state,cache}/nvim,
-# backed up to .bak) so plugins and treesitter parsers are always reinstalled
-# from the current config — opt out with NVIM_WIPE=0.
+# Each run also purges the nvim data dirs (~/.local/{share,state,cache}/nvim,
+# and any stale .bak leftovers) so plugins and treesitter parsers are always
+# reinstalled from the current config — opt out with NVIM_WIPE=0.
 #
 # Running as root on a fresh Ubuntu first creates a non-root user (default:
 # taminaru, passwordless with NOPASSWD sudo), copies this repo into their home,
@@ -170,15 +170,15 @@ done
 # 3a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
 #     state, cache). They are derived state recreated by nvim, but stale
 #     versions (e.g. from an AstroNvim major upgrade) can leave broken
-#     treesitter parsers and plugins behind, so we overwrite them each run.
-#     Previous dirs are kept as <dir>.bak; opt out with NVIM_WIPE=0.
+#     treesitter parsers and plugins behind, so we wipe them each run.
+#     Dirs are purged, not kept as <dir>.bak; opt out with NVIM_WIPE=0.
 NVIM_WIPE="${NVIM_WIPE:-1}"
 if [ "$NVIM_WIPE" = "1" ]; then
   for sub in share state cache; do
     target="$HOME/.local/$sub/nvim"
-    if [ -e "$target" ] || [ -L "$target" ]; then
-      mv "$target" "${target}.bak"
-      log "🧹 reset ~/.local/$sub/nvim -> ${target}.bak"
+    if [ -e "$target" ] || [ -L "$target" ] || [ -e "${target}.bak" ] || [ -L "${target}.bak" ]; then
+      rm -rf "$target" "${target}.bak"
+      log "🧹 wiped ~/.local/$sub/nvim (+ stale .bak)"
     fi
   done
 fi
