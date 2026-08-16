@@ -63,6 +63,7 @@ provisioned with `mise install`. Versions are pinned in `mise.lock`; see
 | bottom | 0.14.8 | system monitor | `aqua:ClementTsang/bottom` |
 | carapace | 1.7.3 | shell completion engine | `aqua:carapace-sh/carapace-bin` |
 | difftastic | 0.70.0 | structural `diff` | `aqua:Wilfred/difftastic` |
+| dotnet | 10.0.400 | .NET SDK (required by the nvim `cs` pack) | `core` |
 | eza | 0.23.5 | `ls` replacement | `aqua:eza-community/eza` |
 | fastfetch | 2.67.1 | system info | `aqua:fastfetch-cli/fastfetch` |
 | fd | 10.4.2 | `find` replacement | `aqua:sharkdp/fd` |
