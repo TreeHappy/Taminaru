@@ -3,7 +3,8 @@
   "lastChangelogVersion": "0.84.2",
   "packages": [
     "npm:pi-mcp-adapter",
-    "npm:@maxpaulus/pi-cline"
+    "npm:@maxpaulus/pi-cline",
+    "npm:@firstpick/pi-themes-bundle"
   ],
   "defaultProvider": "cline",
   "defaultModel": "deepseek/deepseek-v4-flash",
