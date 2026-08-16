@@ -56,7 +56,9 @@ Running as root (e.g. right after a fresh Ubuntu install) first creates a
 non-root user — default name `taminaru`, passwordless with NOPASSWD sudo,
 overridable via `TAMINARU_USER=bob bash scripts/bootstrap.sh` — copies this
 repo into that user's home, and re-runs the rest of the bootstrap as them, so
-you never have to use root.
+you never have to use root. See
+[`documentation/passwordless-sudo.md`](documentation/passwordless-sudo.md) for
+how passwordless sudo is set up and verified.
 
 It is idempotent and safe to re-run.
 
