@@ -62,6 +62,12 @@ how passwordless sudo is set up and verified.
 
 It is idempotent and safe to re-run.
 
+Re-running the bootstrap also **resets the nvim data dirs**
+(`~/.local/share/nvim`, `~/.local/state/nvim`, `~/.cache/nvim` — each moved to
+`<dir>.bak`) so plugins and treesitter parsers are always reinstalled from the
+current config, e.g. after an AstroNvim major upgrade. Set `NVIM_WIPE=0` to keep
+existing nvim state instead.
+
 Running the tools from a container? `podman exec ... pwsh` won't find pwsh
 because exec skips shell startup (so mise is never activated). `podman exec -u
 taminaru -it <container> bash` opens an interactive shell that activates mise

@@ -10,6 +10,10 @@
 # to the AI coding harnesses (pi/opencode/mammouth), and applies the default
 # catppuccin theme. Idempotent and safe to re-run.
 #
+# Each run also resets the nvim data dirs (~/.local/{share,state,cache}/nvim,
+# backed up to .bak) so plugins and treesitter parsers are always reinstalled
+# from the current config — opt out with NVIM_WIPE=0.
+#
 # Running as root on a fresh Ubuntu first creates a non-root user (default:
 # taminaru, passwordless with NOPASSWD sudo), copies this repo into their home,
 # and re-runs the whole bootstrap as that user.
@@ -33,15 +37,13 @@ log "✨ Taminaru dotfiles bootstrap — sit back, we've got this"
 #    later check in this script sees real state. apt-get is idempotent, so
 #    re-runs are no-ops. As root we don't need sudo; otherwise sudo must
 #    already be installed (see README.md).
+#    build-essential (cc/gcc) is required for nvim's treesitter parsers, so it
+#    is installed here BEFORE the passwordless-sudo check below.
 export DEBIAN_FRONTEND="noninteractive"
 APT_GET="apt-get"
 if [ "$(id -u)" -ne 0 ]; then
   if ! command -v sudo >/dev/null 2>&1; then
     warn "sudo is missing — as root, run: apt-get install -y curl git sudo"
-    exit 1
-  fi
-  if ! sudo -n true 2>/dev/null; then
-    warn "$(id -un) needs passwordless sudo — as root, run: echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$(id -un) && chmod 440 /etc/sudoers.d/$(id -un)"
     exit 1
   fi
   APT_GET="sudo apt-get"
@@ -51,7 +53,17 @@ $APT_GET update
 $APT_GET install -y curl git sudo unzip ca-certificates libicu-dev \
   libssl3 libgssapi-krb5-2 zlib1g build-essential
 
-# 0a. Fresh install: when running as root, create a non-root user so we don't
+# 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the
+#     sudoers self-heal on fresh installs). Runs after apt so the required
+#     packages above are already on the machine.
+if [ "$(id -u)" -ne 0 ]; then
+  if ! sudo -n true 2>/dev/null; then
+    warn "$(id -un) needs passwordless sudo — as root, run: echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$(id -un) && chmod 440 /etc/sudoers.d/$(id -un)"
+    exit 1
+  fi
+fi
+
+# 0b. Fresh install: when running as root, create a non-root user so we don't
 #     have to use root, then re-run the rest of this script as that user.
 if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   if ! id "$TAMINARU_USER" >/dev/null 2>&1; then
@@ -155,7 +167,23 @@ for dir in "$CONFIG_DIR"/*/; do
   log "🔗 linked ~/.config/$name -> $dir"
 done
 
-# 3a. Remove stale symlinks for tools that were dropped from the repo
+# 3a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
+#     state, cache). They are derived state recreated by nvim, but stale
+#     versions (e.g. from an AstroNvim major upgrade) can leave broken
+#     treesitter parsers and plugins behind, so we overwrite them each run.
+#     Previous dirs are kept as <dir>.bak; opt out with NVIM_WIPE=0.
+NVIM_WIPE="${NVIM_WIPE:-1}"
+if [ "$NVIM_WIPE" = "1" ]; then
+  for sub in share state cache; do
+    target="$HOME/.local/$sub/nvim"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+      mv "$target" "${target}.bak"
+      log "🧹 reset ~/.local/$sub/nvim -> ${target}.bak"
+    fi
+  done
+fi
+
+# 3b. Remove stale symlinks for tools that were dropped from the repo
 #     (rofi/wofi/waybar/hypr). Only symlinks are removed; real dirs are kept.
 for name in rofi wofi waybar hypr; do
   target="$HOME/.config/$name"
@@ -165,7 +193,7 @@ for name in rofi wofi waybar hypr; do
   fi
 done
 
-# 3b. AI coding harness themes (managed files, idempotent). opencode/mammouth
+# 3c. AI coding harness themes (managed files, idempotent). opencode/mammouth
 #     manage their own config dirs, so only tui.json is linked; pi themes and
 #     settings live under ~/.pi/agent.
 mkdir -p "$HOME/.config/opencode"

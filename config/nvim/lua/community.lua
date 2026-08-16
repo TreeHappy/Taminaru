@@ -1,3 +1,7 @@
+-- AstroCommunity: import any community modules here
+-- We import this file in `lazy_setup.lua` before the `plugins/` folder.
+-- This guarantees that the specs are processed before any user plugins.
+
 ---@type LazySpec
 return {
   "AstroNvim/astrocommunity",
@@ -8,7 +12,6 @@ return {
   { import = "astrocommunity.markdown-and-latex.render-markdown-nvim" },
   { import = "astrocommunity.editing-support.cutlass-nvim" },
   { import = "astrocommunity.bars-and-lines.dropbar-nvim" },
-  { import = "astrocommunity.completion.blink-cmp" },
   { import = "astrocommunity.pack.markdown" },
   { import = "astrocommunity.file-explorer.fyler-nvim" },
   { import = "astrocommunity.diagnostics.lsp_lines-nvim" },
