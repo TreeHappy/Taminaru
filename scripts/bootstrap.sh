@@ -114,7 +114,6 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
 fi
 
 # Set environment variables for non-interactive installation
-export MISE_TRUSTED_CONFIG_PATHS="/"
 export MISE_SYSTEM_DEPS="auto"
 
 # 1. Install mise if missing
@@ -129,6 +128,13 @@ else
 fi
 
 # 2. Provision tools (no-op when already installed; lockfile pins versions)
+# Trust the repo config explicitly (persisted) rather than trusting "/":
+# newer mise ignores trusted_config_paths from a project config, and trusting
+# "/" is a security hole. This makes mise install and every shell that loads
+# the config via MISE_CONFIG_FILE accept it without prompting.
+log "🔐 Trusting $REPO_DIR/mise.toml..."
+"$MISE_BIN" trust "$REPO_DIR/mise.toml"
+
 log "🔧 Installing tools from mise.toml..."
 (cd "$REPO_DIR" && "$MISE_BIN" install)
 

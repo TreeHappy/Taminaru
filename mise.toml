@@ -41,4 +41,3 @@ mammouth = { version = "latest", matching = "mammouth" }
 [settings]
 experimental = true
 lockfile = true
-trusted_config_paths = ["/"]

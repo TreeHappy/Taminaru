@@ -3128,6 +3128,14 @@ checksum = "sha256:5a0b55df66ff07b4342e04967cef69f8bf348f6a0fb1cc1eca741c7b015df
 url = "https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.7-h534d264_7.conda"
 checksum = "sha256:ca7daae4f218a11fab82cc2857f0ea518ec3f46acec60490485347a4c22c6b3e"
 
+[[tools."aqua:ImageMagick/ImageMagick"]]
+version = "7.1.2-29"
+backend = "aqua:ImageMagick/ImageMagick"
+
+[[tools."aqua:carapace-sh/carapace-bin"]]
+version = "1.7.3"
+backend = "aqua:carapace-sh/carapace-bin"
+
 [[tools."aqua:fish-shell/fish-shell"]]
 version = "4.8.1"
 backend = "aqua:fish-shell/fish-shell"
