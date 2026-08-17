@@ -147,7 +147,7 @@ log "🌍 global mise config: \$HOME/Taminaru/mise.toml (via MISE_CONFIG_FILE in
 #     repo stays the single source of truth.
 log "🎯 Applying dotfiles with chezmoi (source: \$REPO_DIR/dotfiles)..."
 CHEZMOI_SOURCE="$REPO_DIR/dotfiles"
-"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply
+"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply --force
 
 # 3a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
 #     state, cache). They are derived state recreated by nvim, but stale
@@ -213,7 +213,7 @@ fi
 
 # 6. Apply the default catppuccin theme via the mise-installed pwsh
 log "🎨 Applying catppuccin $FLAVOR theme..."
-"$MISE_BIN" x powershell -- pwsh -NoProfile -File "$REPO_DIR/scripts/theme.ps1" "$FLAVOR"
+(cd "$REPO_DIR" && "$MISE_BIN" x -- pwsh -NoProfile -File "$REPO_DIR/scripts/theme.ps1" "$FLAVOR")
 
 # 6b. The theme switch edits files in the chezmoi source dir; re-apply so the
 #     updated theme reaches $HOME.
