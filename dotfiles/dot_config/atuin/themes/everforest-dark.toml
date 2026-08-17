@@ -1,0 +1,19 @@
+[theme]
+name = "everforest-dark"
+
+[colors]
+AlertInfo = "#a7c080"
+AlertWarn = "#dbbc7f"
+AlertError = "#e67e80"
+Annotation = "#e69875"
+Base = "#d3c6aa"
+Guidance = "#859289"
+Important = "#a7c080"
+Title = "#e69875"
+Muted = "#7a8478"
+SyntaxCommand = "#7fbbb3"
+SyntaxFlag = "#e69875"
+SyntaxString = "#a7c080"
+SyntaxVariable = "#d699b6"
+SyntaxOperator = "#83c092"
+SyntaxComment = "#859289"
