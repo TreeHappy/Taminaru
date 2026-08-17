@@ -41,16 +41,13 @@ $env:EDITOR = "nvim"
 $env:YAZI_CONFIG_HOME = Join-Path $env:HOME ".config/yazi/"
 $env:XDG_CONFIG_HOME = Join-Path $env:HOME ".config"
 $env:CARAPACE_BRIDGES = 'zsh,fish,bash,inshellisense'
-$env:LS_COLORS = "$(vivid generate catppuccin-frappe)"
 $env:GIT_EXTERNAL_DIFF = "difft"
 
 if ($IsWindows) {
     $env:HOME = $env:USERPROFILE
     $env:YAZI_FILE_ONE = "C:\Program Files\Git\usr\bin\file.exe"
-    $env:STARSHIP_CONFIG = "${env:USERPROFILE}\.config\starship\starship.toml"
+    $env:STARSHIP_CONFIG = Join-Path $env:HOME ".config/starship.toml"
 }
-
-Set-PSReadLineOption -Colors @{ "Selection" = "`e[7m" }
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 carapace _carapace | Out-String | Invoke-Expression
 

@@ -48,8 +48,11 @@ function Get-TaminaruTheme {
     <#
     .SYNOPSIS
       Prints the currently active catppuccin flavor.
+    .DESCRIPTION
+      Reads from the live chezmoi-managed file at ~/.config/ghostty/config
+      (the actual config the terminal uses), NOT the source file in the repo.
     #>
-    $ghostty = Join-Path (Get-TaminaruRepoDir) "dotfiles/dot_config/ghostty/config"
+    $ghostty = Join-Path $HOME ".config/ghostty/config"
     $cur = 'frappe'
     if (Test-Path $ghostty) {
         $line = Get-Content $ghostty | Where-Object { $_ -match '^theme = "Catppuccin (\w+)"' } | Select-Object -First 1
@@ -207,7 +210,8 @@ function Set-TaminaruTheme {
         Remove-Item -Force
 
     # starship (canonical file uses frappe hexes already)
-    $Starship = Join-Path $ConfigDir "starship/starship.toml"
+    # Note: chezmoi maps dot_config/starship.toml → ~/.config/starship.toml (flat, not a subdir)
+    $Starship = Join-Path $ConfigDir "starship.toml"
     if (Test-Path $Starship) { Invoke-SubHex $Starship; Write-Log "🪐 starship: starship.toml -> $Flavor" }
 
     # pwsh (PSReadLine colors, fzf opts, bat/vivid env)
@@ -348,16 +352,12 @@ if (Get-Command vivid -ErrorAction SilentlyContinue) {
 function Update-Taminaru {
     <#
     .SYNOPSIS
-      Updates Taminaru: restores generated files, pulls latest, re-runs bootstrap.
+      Updates Taminaru: pulls latest repo changes and re-applies dotfiles via chezmoi.
 
     .DESCRIPTION
-      Restores every tracked file to HEAD (discarding changes written by theme
-      switches, mise installs and the bootstrap's managed files), pulls the
-      latest commit from origin, then runs scripts/bootstrap.sh to regenerate
-      them.
-
-      Because the repo is the single source of truth, uncommitted tweaks are
-      discarded — commit anything you want to keep before running this.
+      Pulls the latest commits from origin (fast-forward only), re-applies the
+      chezmoi-managed dotfiles to $HOME, and re-applies the current catppuccin
+      theme. No more git checkout -- . — chezmoi handles the apply.
     #>
     $ErrorActionPreference = "Stop"
 
@@ -365,24 +365,26 @@ function Update-Taminaru {
     if (-not (Test-Path $RepoDir)) {
         throw "Taminaru repo not found at '$RepoDir'"
     }
-    $Bootstrap = Join-Path $RepoDir "scripts/bootstrap.sh"
-    if (-not (Test-Path $Bootstrap)) {
-        throw "bootstrap script not found at '$Bootstrap'"
-    }
 
-    Write-Host "[taminaru] 📥 Restoring generated files..." -ForegroundColor Blue
-    git -C $RepoDir checkout -- .
-    if ($LASTEXITCODE -ne 0) { throw "failed to restore the working tree (exit $LASTEXITCODE)" }
-
-    Write-Host "[taminaru] 📥 Pulling latest changes..." -ForegroundColor Blue
-    git -C $RepoDir pull
+    Write-Host "[taminaru] Pulling latest changes..." -ForegroundColor Blue
+    git -C $RepoDir pull --ff-only
     if ($LASTEXITCODE -ne 0) { throw "git pull failed (exit $LASTEXITCODE)" }
 
-    Write-Host "[taminaru] 🔧 Running bootstrap..." -ForegroundColor Blue
-    & bash $Bootstrap
-    if ($LASTEXITCODE -ne 0) { throw "bootstrap failed (exit $LASTEXITCODE)" }
+    $ChezmoiSource = Join-Path $RepoDir "dotfiles"
+    Write-Host "[taminaru] Re-applying dotfiles with chezmoi..." -ForegroundColor Blue
+    if (Get-Command chezmoi -ErrorAction SilentlyContinue) {
+        chezmoi --source "$ChezmoiSource" apply
+    } elseif (Get-Command mise -ErrorAction SilentlyContinue) {
+        mise x chezmoi -- chezmoi --source "$ChezmoiSource" apply
+    } else {
+        throw "chezmoi not found — install via: mise use aqua:twpayne/chezmoi"
+    }
+    if ($LASTEXITCODE -ne 0) { throw "chezmoi apply failed (exit $LASTEXITCODE)" }
 
-    Write-Host "[taminaru] ✅ Taminaru is up to date." -ForegroundColor Blue
+    Write-Host "[taminaru] Re-applying theme..." -ForegroundColor Blue
+    Set-TaminaruTheme (Get-TaminaruTheme)
+
+    Write-Host "[taminaru] Done. Taminaru is up to date." -ForegroundColor Blue
 }
 
 Export-ModuleMember -Function Set-TaminaruTheme, Get-TaminaruTheme, Get-TaminaruRepoDir, Update-Taminaru

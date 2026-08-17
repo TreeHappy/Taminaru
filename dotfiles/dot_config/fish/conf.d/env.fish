@@ -4,7 +4,6 @@ set -gx XDG_CONFIG_HOME "$HOME/.config"
 set -gx YAZI_CONFIG_HOME "$HOME/.config/yazi/"
 set -gx CARAPACE_BRIDGES 'zsh,fish,bash,inshellisense'
 set -gx GIT_EXTERNAL_DIFF difft
-set -gx BAT_THEME 'Catppuccin Frappe'
 
 # LS_COLORS via vivid (mirrors theme.ps1)
 if command -vq vivid
