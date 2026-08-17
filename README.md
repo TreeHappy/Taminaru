@@ -7,7 +7,7 @@ Everything is driven from PowerShell. All tools are provisioned with [mise](http
 
 ### Dependencies
 
-The full dependency stack — apt packages, all 26 mise tools, and the conda
+The full dependency stack — apt packages, all 27 mise tools, and the conda
 packages (imagemagick, lua, luarocks) — is documented in
 [`documentation/dependencies.md`](documentation/dependencies.md).
 
@@ -85,6 +85,30 @@ because exec skips shell startup (so mise is never activated). `podman exec -u
 taminaru -it <container> bash` opens an interactive shell that activates mise
 and starts pwsh — see
 [`documentation/podman-exec.md`](documentation/podman-exec.md).
+
+### Sharing your terminal (tty-share)
+
+[tty-share](https://tty-share.com) shares your live terminal over the internet
+with a single HTTPS browser link — the person on the other side needs no tool
+and no account.
+
+```bash
+tty-share --public
+```
+
+This prints a secret URL like `https://go.tty-share.com/s/<token>`; send it to
+your guest, they open it in any browser and join your session. Useful flags:
+
+| Flag | Meaning |
+| --- | --- |
+| `--public` | make the session reachable over the internet (default is LAN-only) |
+| `--readonly` | let guests view but not type |
+| `--headless` | run without an interactive terminal (e.g. from a script/CI) |
+| `--no-wait` | start the session without waiting for `Enter` |
+
+The connection is fully encrypted. Because it is a live PTY, size rendering is
+cleanest when your terminal is multiplexed — e.g. wrap it with `tmux` or run it
+from your usual `pwsh` session.
 
 ### Your pwsh profile
 

@@ -36,6 +36,7 @@ mammouth = "github:mammouth-ai/code"
 "github:ajeetdsouza/zoxide" = "latest"
 "aqua:fish-shell/fish-shell" = "latest"
 "github:tinted-theming/tinty" = "latest"
+"github:elisescu/tty-share" = "latest"
 mammouth = { version = "latest", matching = "mammouth" }
 
 [settings]

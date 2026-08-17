@@ -26,7 +26,7 @@ The full apt list (`scripts/bootstrap.sh`):
 
 ```bash
 curl git sudo unzip ca-certificates libicu-dev \
-  libssl3 libgssapi-krb5-2 zlib1g build-essential libreadline-dev tmate
+  libssl3 libgssapi-krb5-2 zlib1g build-essential libreadline-dev
 ```
 
 What each is for:
@@ -43,7 +43,6 @@ What each is for:
 | `libgssapi-krb5-2` | Kerberos/GSSAPI runtime for git/gh network auth |
 | `zlib1g` | compression runtime lib |
 | `build-essential` | `cc`/`gcc` required to compile nvim's treesitter parsers |
-| `tmate` | share live terminal sessions over the internet — hands out an SSH URL and an HTTPS web link for guests |
 | `libreadline-dev` | readline dev headers (pulls in `libncurses-dev`) so lazy.nvim's hererocks can build the sandboxed Lua 5.1 needed by the `image.nvim`/`magick` luarocks |
 
 The devcontainer image additionally bakes in `libicu-dev` and the rest of the
@@ -84,6 +83,7 @@ provisioned with `mise install`. Versions are pinned in `mise.lock`; see
 | powershell | 7.6.5 | shell (default login shell) | `aqua:PowerShell/PowerShell` |
 | ripgrep | 15.2.0 | `grep` replacement | `aqua:BurntSushi/ripgrep` |
 | starship | 1.26.0 | prompt | `aqua:starship/starship` |
+| tty-share | 2.4.1 | share a terminal over the internet via an HTTPS browser link (guest needs no tool) | `github:elisescu/tty-share` |
 | vivid | 0.11.1 | `LS_COLORS` generator | `aqua:sharkdp/vivid` |
 | yazi | 26.8.15 | terminal file manager | `aqua:sxyazi/yazi` |
 | zoxide | 0.10.0 | smarter `cd` | `aqua:ajeetdsouza/zoxide` |

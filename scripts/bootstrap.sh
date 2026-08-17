@@ -48,11 +48,10 @@ if [ "$(id -u)" -ne 0 ]; then
   fi
   APT_GET="sudo apt-get"
 fi
-log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential libreadline-dev libicu-dev tmate ...)..."
+log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential libreadline-dev libicu-dev ...)..."
 $APT_GET update
 $APT_GET install -y curl git sudo unzip xz-utils ca-certificates libicu-dev \
   libssl3 libgssapi-krb5-2 zlib1g build-essential \
-  tmate # share live terminal sessions over the internet (SSH + HTTPS web link)
   libreadline-dev # readline headers for lazy.nvim's hererocks to build the sandboxed Lua 5.1 needed by image.nvim/magick luarocks
 
 # 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the
