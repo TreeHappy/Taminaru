@@ -20,7 +20,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TAMINARU_USER="${TAMINARU_USER:-taminaru}"
+TAMINARU_USER="${TAMINARU_USER:-taminaru2}"
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
@@ -129,7 +129,21 @@ else
   log "✅ Nix installed: $(nix --version)"
 fi
 
-# 1a. Ensure nix-daemon is running (required for nix build).
+# 1b. Lean nix config — write nix.custom.conf (included by Determinate's nix.conf)
+NIX_CUSTOM_CONF="/etc/nix/nix.custom.conf"
+NIX_CUSTOM_CONTENT="# Taminaru lean nix config — auto-optimise-store deduplicates store paths
+auto-optimise-store = true
+max-jobs = auto
+log-format bar
+"
+if [ "$(id -u)" -eq 0 ]; then
+  echo "$NIX_CUSTOM_CONTENT" > "$NIX_CUSTOM_CONF"
+else
+  echo "$NIX_CUSTOM_CONTENT" | sudo tee "$NIX_CUSTOM_CONF" > /dev/null
+fi
+log "✅ nix.custom.conf written (auto-optimise-store, max-jobs auto)"
+
+# 1c. Ensure nix-daemon is running (required for nix build).
 #     On systemd systems the daemon is managed by its service unit.
 #     Without systemd (containers, WSL) we start it manually via sudo
 #     since the socket must be owned by root.
@@ -165,7 +179,7 @@ log "🔧 Applying home-manager configuration..."
 if [ -d "$REPO_DIR/.git" ]; then
   # If in a git repo, use nix build + activate
   log "📦 Building home-manager activation package..."
-  nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+  nix build "$REPO_DIR#homeConfigurations.taminaru2.activationPackage" \
     --extra-experimental-features "nix-command flakes" \
     --out-link "$REPO_DIR/result"
 
@@ -174,7 +188,7 @@ if [ -d "$REPO_DIR/.git" ]; then
 else
   # Fallback: use nix run directly
   log "📦 Building and activating via nix run..."
-  nix run "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+  nix run "$REPO_DIR#homeConfigurations.taminaru2.activationPackage" \
     --extra-experimental-features "nix-command flakes"
 fi
 
