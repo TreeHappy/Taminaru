@@ -287,9 +287,6 @@
     # ── OpenCode ──
     "opencode/tui.json".source = ./dotfiles/config/opencode/tui.json;
 
-    # ── Mammouth ──
-    "mammouth/tui.json".source = ./dotfiles/config/mammouth/tui.json;
-
     # ── Lazygit ──
     "lazygit/config.yml".source = ./dotfiles/config/lazygit/config.yml;
 
