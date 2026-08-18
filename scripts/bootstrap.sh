@@ -20,7 +20,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TAMINARU_USER="${TAMINARU_USER:-codespace}"
+TAMINARU_USER="${TAMINARU_USER:-taminaru}"
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
@@ -178,7 +178,7 @@ log "🔧 Applying home-manager configuration..."
 if [ -d "$REPO_DIR/.git" ]; then
   # If in a git repo, use nix build + activate
   log "📦 Building home-manager activation package..."
-  nix build "$REPO_DIR#homeConfigurations.codespace.activationPackage" \
+  nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
     --extra-experimental-features "nix-command flakes" \
     --out-link "$REPO_DIR/result"
 
@@ -187,7 +187,7 @@ if [ -d "$REPO_DIR/.git" ]; then
 else
   # Fallback: use nix run directly
   log "📦 Building and activating via nix run..."
-  nix run "$REPO_DIR#homeConfigurations.codespace.activationPackage" \
+  nix run "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
     --extra-experimental-features "nix-command flakes"
 fi
 

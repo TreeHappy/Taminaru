@@ -15,7 +15,7 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      homeConfigurations.codespace = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.taminaru = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
           ./home.nix
@@ -24,6 +24,6 @@
 
       # Default output: apply the configuration
       packages.${system}.default =
-        self.homeConfigurations.codespace.config.activationPackage;
+        self.homeConfigurations.taminaru.config.activationPackage;
     };
 }

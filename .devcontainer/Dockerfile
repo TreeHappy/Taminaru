@@ -18,17 +18,12 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Bake only what the bootstrap needs, at its runtime mount path
-# (/workspaces/Taminaru is where Codespaces mounts the live repo).
-COPY mise.toml mise.lock scripts config /workspaces/Taminaru/
-RUN chown -R vscode:vscode /workspaces/Taminaru
+RUN chown -R taminaru:taminaru /workspaces/Taminaru
 
-USER vscode
-ENV MISE_DATA_DIR="/home/vscode/.local/share/mise" \
-    PATH="/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:$PATH"
+USER taminaru
 
 # Make pwsh the default shell (needs to be in /etc/shells first).
 USER root
-RUN echo '/home/vscode/.local/bin/pwsh' >> /etc/shells \
-    && chsh -s /home/vscode/.local/bin/pwsh vscode
-USER vscode
+RUN echo '/home/taminaru/.local/bin/pwsh' >> /etc/shells \
+    && chsh -s /home/taminaru/.local/bin/pwsh taminaru
+USER taminaru

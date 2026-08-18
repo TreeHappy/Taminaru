@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  home.username = "codespace";
-  home.homeDirectory = "/home/codespace";
+  home.username = "taminaru";
+  home.homeDirectory = "/home/taminaru";
   home.stateVersion = "24.05";
   programs.home-manager.enable = true;
 
