@@ -4,7 +4,7 @@
 > themes are wired into this dotfiles repo, what the
 > `@firstpick/pi-themes-bundle` package provides, and how/why the bootstrap was
 > (or was not) changed. Read this before touching `scripts/bootstrap.sh`,
-> `dotfiles/dot_pi/agent/settings.json`, or `dotfiles/dot_pi/agent/themes/`.
+> `dotfiles/pi/agent/settings.json`, or `dotfiles/pi/agent/themes/`.
 
 ## 1. Task
 
@@ -14,23 +14,23 @@ in use.
 
 ## 2. Current state (before any change)
 
-The repo manages Pi config under `dotfiles/dot_pi/agent/`; home-manager applies
+The repo manages Pi config under `dotfiles/pi/agent/`; home-manager applies
 it to `~/.pi/agent/` as real files via `xdg.configFile`:
 
-- `dotfiles/dot_pi/agent/settings.json` — Pi settings. Currently pins:
+- `dotfiles/pi/agent/settings.json` — Pi settings. Currently pins:
   - `"theme": "catppuccin-frappe"`
   - `"packages": ["npm:pi-mcp-adapter", "npm:@maxpaulus/pi-cline"]`
-- `dotfiles/dot_pi/agent/themes/*.json` — **local** Pi themes for all four
+- `dotfiles/pi/agent/themes/*.json` — **local** Pi themes for all four
   Catppuccin flavors: `catppuccin-frappe`, `catppuccin-latte`,
   `catppuccin-macchiato`, `catppuccin-mocha`. These are written in Pi's JSON
   theme format (full official Catppuccin palette in `vars`, standard color
   mapping, `export` block).
 - `scripts/bootstrap.sh`:
-  - home-manager activation applies all dotfiles (incl. `dot_pi/agent/{settings,mcp}.json`).
+   - home-manager activation applies all dotfiles (incl. `pi/agent/{settings,mcp}.json`).
   - §3 reads `"npm:..."` entries out of the applied `~/.pi/agent/settings.json`
     and runs `pi install <pkg>` for each (idempotent). **This is the install
     hook for Pi packages.**
-- `dotfiles/dot_config/themes/*.tmTheme` — TextMate theme files for a
+- `dotfiles/config/themes/*.tmTheme` — TextMate theme files for a
   different consumer (nvim/other), unrelated to Pi's JSON themes.
 
 **Conclusion: the bundle is NOT currently used.** Pi's Catppuccin comes from
@@ -103,9 +103,9 @@ theme's `name` field exactly.
 ## 5. Decision — plugin-only (adopted)
 
 **Pi is now themed entirely by the bundle.** The local
-`dotfiles/dot_pi/agent/themes/*.json` files were deleted, and pi's default is
+`dotfiles/pi/agent/themes/*.json` files were deleted, and pi's default is
 `catppuccin-mocha`, which the bundle ships. The setting is written directly in
-`dotfiles/dot_pi/agent/settings.json` and falls back to `catppuccin-mocha`
+`dotfiles/pi/agent/settings.json` and falls back to `catppuccin-mocha`
 for `frappe`/`macchiato`, since the bundle provides only `catppuccin-latte` and
 `catppuccin-mocha`.
 
@@ -118,9 +118,9 @@ theme references a background PNG that is not shipped — see §4a.3.)
 
 - `pi list` shows `npm:@firstpick/pi-themes-bundle` installed.
 - `~/.pi/agent/settings.json` is a real file applied by home-manager from the
-  repo's `dotfiles/dot_pi/agent/settings.json` and reads
+  repo's `dotfiles/pi/agent/settings.json` and reads
   `"theme": "catppuccin-mocha"`.
-- `dotfiles/dot_pi/agent/themes/` no longer exists; `~/.pi/agent/themes/` is not
+- `dotfiles/pi/agent/themes/` no longer exists; `~/.pi/agent/themes/` is not
   created by the bootstrap.
 - Re-run `bash scripts/bootstrap.sh` and confirm pi package install logs
   `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and home-manager
@@ -132,7 +132,7 @@ theme references a background PNG that is not shipped — see §4a.3.)
 | Path                          | Role                                        |
 |-------------------------------|---------------------------------------------|
 | `scripts/bootstrap.sh`        | home-manager activation; pi pkg install |
-| `dotfiles/dot_pi/agent/settings.json` | `theme` (mocha default), `packages` (drives pi install) |
-| ~~`dotfiles/dot_pi/agent/themes/*.json`~~ | removed — pi is plugin-only now |
-| `dotfiles/dot_config/themes/*.tmTheme` | TextMate themes for another tool (not Pi) |
+| `dotfiles/pi/agent/settings.json` | `theme` (mocha default), `packages` (drives pi install) |
+| ~~`dotfiles/pi/agent/themes/*.json`~~ | removed — pi is plugin-only now |
+| `dotfiles/config/themes/*.tmTheme` | TextMate themes for another tool (not Pi) |
 | `~/.pi/agent/settings.json`   | live settings (applied by home-manager) |

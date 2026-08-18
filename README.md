@@ -76,11 +76,11 @@ existing nvim state instead.
 
 pwsh on Linux reads `~/.config/powershell/profile.ps1`
 (`$PROFILE.CurrentUserAllHosts`) at startup. The bootstrap applies the repo's
-`dotfiles/dot_config/powershell/profile.ps1` to `~/.config/powershell/profile.ps1`
+`dotfiles/config/powershell/profile.ps1` to `~/.config/powershell/profile.ps1`
 via home-manager (a real copy, not a symlink) — the repo stays the single source
 of truth.
 
-Edit `dotfiles/dot_config/powershell/profile.ps1` in the repo, then
+Edit `dotfiles/config/powershell/profile.ps1` in the repo, then
 `bash scripts/sync.sh` to re-apply it. Don't edit the bare `$PROFILE` — that
 points to `~/.config/powershell/Microsoft.PowerShell_profile.ps1`, which
 Taminaru neither creates nor loads.

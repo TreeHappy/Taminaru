@@ -13,7 +13,6 @@
     bat
     bottom
     carapace
-    chezmoi        # kept during transition, remove later
     difftastic
     eza
     fastfetch
@@ -234,85 +233,85 @@
   # ── Raw config files (tools without home-manager modules) ────────────
   xdg.configFile = {
     # ── Neovim (AstroNvim) ──
-    "nvim/init.lua".source = ./dotfiles/dot_config/nvim/init.lua;
-    "nvim/lazy-lock.json".source = ./dotfiles/dot_config/nvim/lazy-lock.json;
-    "nvim/neovim.yml".source = ./dotfiles/dot_config/nvim/neovim.yml;
-    "nvim/selene.toml".source = ./dotfiles/dot_config/nvim/selene.toml;
-    "nvim/README.md".source = ./dotfiles/dot_config/nvim/README.md;
-    "nvim/.luarc.json".source = ./dotfiles/dot_config/nvim/dot_luarc.json;
-    "nvim/.neoconf.json".source = ./dotfiles/dot_config/nvim/dot_neoconf.json;
-    "nvim/.stylua.toml".source = ./dotfiles/dot_config/nvim/dot_stylua.toml;
+    "nvim/init.lua".source = ./dotfiles/config/nvim/init.lua;
+    "nvim/lazy-lock.json".source = ./dotfiles/config/nvim/lazy-lock.json;
+    "nvim/neovim.yml".source = ./dotfiles/config/nvim/neovim.yml;
+    "nvim/selene.toml".source = ./dotfiles/config/nvim/selene.toml;
+    "nvim/README.md".source = ./dotfiles/config/nvim/README.md;
+    "nvim/.luarc.json".source = ./dotfiles/config/nvim/.luarc.json;
+    "nvim/.neoconf.json".source = ./dotfiles/config/nvim/.neoconf.json;
+    "nvim/.stylua.toml".source = ./dotfiles/config/nvim/.stylua.toml;
     "nvim/lua" = {
-      source = ./dotfiles/dot_config/nvim/lua;
+      source = ./dotfiles/config/nvim/lua;
       recursive = true;
     };
 
     # ── PowerShell ──
-    "powershell/profile.ps1".source = ./dotfiles/dot_config/powershell/profile.ps1;
-    "powershell/tools.psm1".source = ./dotfiles/dot_config/powershell/tools.psm1;
+    "powershell/profile.ps1".source = ./dotfiles/config/powershell/profile.ps1;
+    "powershell/tools.psm1".source = ./dotfiles/config/powershell/tools.psm1;
 
     # ── Atuin ──
-    "atuin/config.toml".source = ./dotfiles/dot_config/atuin/config.toml;
+    "atuin/config.toml".source = ./dotfiles/config/atuin/config.toml;
     "atuin/themes" = {
-      source = ./dotfiles/dot_config/atuin/themes;
+      source = ./dotfiles/config/atuin/themes;
       recursive = true;
     };
 
     # ── Bat themes ──
     "bat/themes" = {
-      source = ./dotfiles/dot_config/bat/themes;
+      source = ./dotfiles/config/bat/themes;
       recursive = true;
     };
 
     # ── Carapace ──
     "carapace/specs" = {
-      source = ./dotfiles/dot_config/carapace/specs;
+      source = ./dotfiles/config/carapace/specs;
       recursive = true;
     };
     "carapace/bin" = {
-      source = ./dotfiles/dot_config/carapace/bin;
+      source = ./dotfiles/config/carapace/bin;
       recursive = true;
     };
 
     # ── Eza theme ──
-    "eza/theme.yml".source = ./dotfiles/dot_config/eza/theme.yml;
+    "eza/theme.yml".source = ./dotfiles/config/eza/theme.yml;
 
     # ── Ghostty ──
-    "ghostty/config".source = ./dotfiles/dot_config/ghostty/config;
+    "ghostty/config".source = ./dotfiles/config/ghostty/config;
 
     # ── WezTerm ──
-    "wezterm/wezterm.lua".source = ./dotfiles/dot_config/wezterm/wezterm.lua;
+    "wezterm/wezterm.lua".source = ./dotfiles/config/wezterm/wezterm.lua;
 
     # ── Yazi ──
     "yazi" = {
-      source = ./dotfiles/dot_config/yazi;
+      source = ./dotfiles/config/yazi;
       recursive = true;
     };
 
     # ── OpenCode ──
-    "opencode/tui.json".source = ./dotfiles/dot_config/opencode/tui.json;
+    "opencode/tui.json".source = ./dotfiles/config/opencode/tui.json;
 
     # ── Mammouth ──
-    "mammouth/tui.json".source = ./dotfiles/dot_config/mammouth/tui.json;
+    "mammouth/tui.json".source = ./dotfiles/config/mammouth/tui.json;
 
     # ── Lazygit ──
-    "lazygit/config.yml".source = ./dotfiles/dot_config/lazygit/config.yml;
+    "lazygit/config.yml".source = ./dotfiles/config/lazygit/config.yml;
 
     # ── Bottom ──
-    "bottom/bottom.toml".source = ./dotfiles/dot_config/bottom/bottom.toml;
+    "bottom/bottom.toml".source = ./dotfiles/config/bottom/bottom.toml;
 
     # ── TextMate themes ──
     "themes" = {
-      source = ./dotfiles/dot_config/themes;
+      source = ./dotfiles/config/themes;
       recursive = true;
     };
 
     # ── Pi (coding agent) ──
-    "pi/agent/settings.json".source = ./dotfiles/dot_pi/agent/settings.json;
-    "pi/agent/mcp.json".source = ./dotfiles/dot_pi/agent/mcp.json;
+    "pi/agent/settings.json".source = ./dotfiles/pi/agent/settings.json;
+    "pi/agent/mcp.json".source = ./dotfiles/pi/agent/mcp.json;
 
     # ── Git hooks ──
-    "git/hooks/pre-commit/pre-commit".source = ./dotfiles/dot_config/git/hooks/pre-commit/pre-commit;
+    "git/hooks/pre-commit/pre-commit".source = ./dotfiles/config/git/hooks/pre-commit/pre-commit;
 
     # ── Fish: install catppuccin plugin via fisher ──
     # (handled in programs.fish interactiveShellInit above or via a one-shot script)

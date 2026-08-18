@@ -8,7 +8,7 @@
 #   taminaru-repo   : the Taminaru git checkout  (mounted at ~/Taminaru)
 #   taminaru-tools  : the mise toolchain         (~/.local/share/mise)
 #
-# The resulting image contains only immutable config (applied by chezmoi, no
+# The resulting image contains only immutable config (applied by home-manager, no
 # repo, no symlinks), so agent containers spawned from it have no Taminaru
 # source, no credentials, and no tool binaries baked in.
 #
@@ -40,9 +40,9 @@ USER_HOME="${USER_HOME:-/home/taminaru}"
 log "exporting $CONTAINER ..."
 podman export "$CONTAINER" | tar -x -C "$STAGE"
 
-# chezmoi apply materializes real files into $HOME during bootstrap, so there
+# home-manager apply materializes real files into $HOME during bootstrap, so there
 # are no symlinks into the repo to inline — the image already stands alone.
-log "config is already materialized by chezmoi (no symlinks to inline)"
+log "config is already materialized by home-manager (no symlinks to inline)"
 
 log "scrubbing secrets, temp, and the repo from the image ..."
 for p in \

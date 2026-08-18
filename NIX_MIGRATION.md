@@ -58,7 +58,6 @@ Taminaru/
 | bat | `bat` |
 | bottom | `bottom` |
 | carapace | `carapace` |
-| chezmoi | `chezmoi` (kept during transition) |
 | difftastic | `difftastic` |
 | eza | `eza` |
 | fastfetch | `fastfetch` |
@@ -114,15 +113,15 @@ Taminaru/
 
 ### Phase 5: Repo Cleanup
 
-- [ ] 16. **Rename `dot_*` folders** — drop chezmoi naming convention:
+- [x] 16. **Rename `dot_*` folders** — drop chezmoi naming convention:
   - `dotfiles/dot_config/` → `dotfiles/config/`
   - `dotfiles/dot_pi/` → `dotfiles/pi/`
   - `dotfiles/config/nvim/dot_luarc.json` → `.luarc.json`
   - `dotfiles/config/nvim/dot_neoconf.json` → `.neoconf.json`
   - `dotfiles/config/nvim/dot_stylua.toml` → `.stylua.toml`
-- [ ] 17. **Update all path references** — home.nix, scripts, docs after rename
-- [ ] 18. **Remove chezmoi from packages** — once migration is verified
-- [ ] 19. **Remove icons folder** - icons folder is not required any longer
+- [x] 17. **Update all path references** — home.nix, scripts, docs after rename
+- [x] 18. **Remove chezmoi from packages** — once migration is verified
+- [x] 19. **Remove icons folder** - icons folder is not required any longer
 
 ### Phase 6: Dynamic Theming (Future)
 
@@ -136,18 +135,15 @@ Taminaru/
 2. **PowerShell profile stays as raw file** — `xdg.configFile` copies the
    powershell/ dir. The pwsh profile is too complex for home-manager modules.
 
-3. **chezmoi is kept temporarily** in packages for the transition period. It can
-   be removed once the migration is verified working.
+3. **mammouth** is fetched via a third-party flake input since it's not in nixpkgs.
 
-4. **mammouth** is fetched via a third-party flake input since it's not in nixpkgs.
-
-5. **Default shell** is still pwsh. home-manager doesn't manage system-level
+4. **Default shell** is still pwsh. home-manager doesn't manage system-level
    shell changes — bootstrap.sh still runs `chsh`.
 
-6. **dotfiles/ naming convention changes.** `dot_config/` and `dot_pi/` are
+5. **dotfiles/ naming convention changes.** `dot_config/` and `dot_pi/` are
    renamed to `config/` and `pi/` since chezmoi naming is no longer needed.
 
-7. **stylix is the candidate for dynamic theming.** If theme switching is wanted
+6. **stylix is the candidate for dynamic theming.** If theme switching is wanted
    again, [stylix](https://github.com/nix-community/stylix) is the Nix-native
    approach — it generates consistent color configs for all tools from a single
    palette declaration, replacing the manual per-tool color hardcoding.

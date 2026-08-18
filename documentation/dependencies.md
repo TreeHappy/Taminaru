@@ -59,7 +59,6 @@ are pinned in `flake.lock` (auto-generated, don't edit by hand).
 | bat | `bat` | `cat` clone with syntax highlighting |
 | bottom | `bottom` | system monitor |
 | carapace | `carapace` | shell completion engine |
-| chezmoi | `chezmoi` | kept during transition, remove later |
 | difftastic | `difftastic` | structural `diff` |
 | eza | `eza` | `ls` replacement |
 | fastfetch | `fastfetch` | system info |
@@ -85,7 +84,7 @@ are pinned in `flake.lock` (auto-generated, don't edit by hand).
 | fish | `fish` | interactive shell |
 
 
-Each tool's config lives in `dotfiles/dot_config/<tool>/` and is applied to
+Each tool's config lives in `dotfiles/config/<tool>/` and is applied to
 `~/.config/<tool>/` as real files by home-manager via `xdg.configFile`, so the
 repo stays the single source of truth without symlinks.
 
