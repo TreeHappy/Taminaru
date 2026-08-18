@@ -75,7 +75,7 @@ Taminaru/
 | pi | `pi-coding-agent` |
 | powershell | `powershell` |
 | ripgrep | `ripgrep` |
-| starship | `starship-prompt` |
+| starship | `starship` |
 | uv | `uv` |
 | vivid | `vivid` |
 | yazi | `yazi` |
@@ -160,3 +160,39 @@ After implementation, verify:
 6. starship prompt renders with Catppuccin Frappe colors
 7. nvim starts with AstroNvim
 8. All tools have consistent Catppuccin Frappe theming
+
+## Testing Log
+
+### 2026-08-18: First full test run (testuser account)
+
+Created a fresh `testuser` account to test the bootstrap from scratch.
+
+**Issues found and fixed:**
+
+1. **`flake.nix` — `self` undefined** (line 36): The `outputs` function
+   referenced `self.homeConfigurations` but didn't receive `self` in its
+   arguments. Fixed by adding `self` to the outputs function signature.
+
+2. **`home.nix` — `starship-prompt` undefined** (line 32): The nixpkgs
+   attribute is `starship`, not `starship-prompt`. Renamed the package.
+
+3. **`bootstrap.sh` — `--no-confirm` flag rejected by nix-installer v3**:
+   The Determinate Systems nix-installer v3 (3.21.9) no longer accepts
+   `--no-confirm` as a CLI flag. Fixed by using the `NIX_INSTALLER_NO_CONFIRM`
+   environment variable and passing `install linux` subcommand explicitly.
+
+4. **`bootstrap.sh` — no systemd in containers/WSL**: The installer defaults
+   to using systemd for the nix-daemon service. Without systemd, it fails.
+   Fixed by detecting systemd via `pidof systemd` and passing `--init none`
+   when absent.
+
+5. **`bootstrap.sh` — nix-daemon not running**: With `--init none`, the
+   nix-daemon isn't started automatically. The script tried to start it as
+   the regular user, which fails because the socket must be owned by root.
+   Fixed by using `sudo nix-daemon &` when systemd is not available.
+
+**Remaining upstream issue:**
+
+- `opencode` build fails because the flake input's `bun.lock` is stale
+  (`lockfile had changes, but lockfile is frozen`). This is an issue in the
+  `mammouth-code-nix` flake input, not in our config.

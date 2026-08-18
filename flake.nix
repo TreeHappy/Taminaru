@@ -13,7 +13,7 @@
     mammouth.url = "github:FirPic/mammouth-code-nix";
   };
 
-  outputs = { nixpkgs, home-manager, mammouth, ... }:
+  outputs = { self, nixpkgs, home-manager, mammouth, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};

@@ -29,7 +29,7 @@
     pi-coding-agent
     powershell
     ripgrep
-    starship-prompt
+    starship
     uv
     vivid
     yazi

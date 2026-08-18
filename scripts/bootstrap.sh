@@ -113,7 +113,12 @@ if command -v nix >/dev/null 2>&1; then
   log "🚀 Nix already installed: $(nix --version)"
 else
   log "🚀 Installing Nix (Determinate Systems installer)..."
-  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- --no-confirm
+  INSTALLER_ARGS=("install" "linux" "--no-confirm")
+  if ! pidof systemd >/dev/null 2>&1; then
+    INSTALLER_ARGS+=("--init" "none")
+    log "🔧 systemd not detected, installing without init service"
+  fi
+  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- "${INSTALLER_ARGS[@]}"
   # Source nix profile for this session
   if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
     . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
@@ -122,6 +127,37 @@ else
   fi
   export PATH="/nix/var/nix/profiles/default/bin:$HOME/.nix-profile/bin:$PATH"
   log "✅ Nix installed: $(nix --version)"
+fi
+
+# 1a. Ensure nix-daemon is running (required for nix build).
+#     On systemd systems the daemon is managed by its service unit.
+#     Without systemd (containers, WSL) we start it manually via sudo
+#     since the socket must be owned by root.
+if pidof systemd >/dev/null 2>&1; then
+  log "✅ nix-daemon managed by systemd"
+else
+  DAEMON_RUNNING=0
+  if [ -e /nix/var/nix/daemon-socket/socket ]; then
+    # Socket exists — verify it's actually accepting connections
+    if nix store ping --extra-experimental-features "nix-command" 2>/dev/null; then
+      DAEMON_RUNNING=1
+      log "✅ nix-daemon is running"
+    else
+      warn "stale nix-daemon socket detected, restarting..."
+      sudo rm -f /nix/var/nix/daemon-socket/socket
+    fi
+  fi
+  if [ "$DAEMON_RUNNING" -eq 0 ]; then
+    log "🔧 Starting nix-daemon via sudo..."
+    sudo /nix/var/nix/profiles/default/bin/nix-daemon &
+    DAEMON_PID=$!
+    sleep 2
+    if [ -e /nix/var/nix/daemon-socket/socket ]; then
+      log "✅ nix-daemon started (pid $DAEMON_PID)"
+    else
+      warn "nix-daemon failed to start; builds may not work"
+    fi
+  fi
 fi
 
 # 2. Apply home-manager configuration (tools + dotfiles)
