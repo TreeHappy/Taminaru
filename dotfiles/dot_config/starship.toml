@@ -1,5 +1,4 @@
 # Catppuccin Frappe palette
-# Managed by scripts/theme.ps1
 
 [character]
 success_symbol = "[ 🎏](bold #a6d189)"

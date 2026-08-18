@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 #
-# Taminaru dotfiles bootstrap (bash).
+# Taminaru dotfiles bootstrap (Nix).
 #
-# Provisions a fresh machine (tested on Ubuntu): installs mise (if missing),
-# provisions every tool from mise.toml/mise.lock (including pwsh and chezmoi),
-# points mise at this repo's mise.toml via MISE_CONFIG_FILE, applies the
-# dotfiles with chezmoi (no symlinks) from dotfiles/, wires mise activation
-# into the bash + pwsh profiles, applies catppuccin themes to the AI coding
-# harnesses (pi/opencode/mammouth), and applies the default catppuccin theme.
-# Idempotent and safe to re-run.
+# Provisions a fresh machine (tested on Ubuntu): installs Nix (via Determinate
+# Systems installer), applies every tool and dotfile with home-manager, wires
+# home-manager activation into the bash profile, and switches the login shell
+# to pwsh. Idempotent and safe to re-run.
 #
 # Each run also purges the nvim data dirs (~/.local/{share,state,cache}/nvim,
 # and any stale .bak leftovers) so plugins and treesitter parsers are always
@@ -19,19 +16,16 @@
 # and re-runs the whole bootstrap as that user.
 #
 # Usage: bash scripts/bootstrap.sh
-#        FLAVOR=macchiato bash scripts/bootstrap.sh
 #        TAMINARU_USER=bob bash scripts/bootstrap.sh
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONFIG_DIR="$REPO_DIR/dotfiles/dot_config"
-FLAVOR="${FLAVOR:-frappe}"
 TAMINARU_USER="${TAMINARU_USER:-taminaru}"
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
 
-log "✨ Taminaru dotfiles bootstrap — sit back, we've got this"
+log "✨ Taminaru dotfiles bootstrap (Nix) — sit back, we've got this"
 
 # 0. apt prerequisites: install everything apt can provide up front so every
 #    later check in this script sees real state. apt-get is idempotent, so
@@ -52,8 +46,8 @@ log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential 
 $APT_GET update
 $APT_GET install -y curl git sudo unzip xz-utils ca-certificates libicu-dev \
   libssl3 libgssapi-krb5-2 zlib1g build-essential \
-  tmate # share live terminal sessions over the internet (SSH + HTTPS web link)
-  libreadline-dev # readline headers for lazy.nvim's hererocks to build the sandboxed Lua 5.1 needed by image.nvim/magick luarocks
+  tmate \
+  libreadline-dev
 
 # 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the
 #     sudoers self-heal on fresh installs). Runs after apt so the required
@@ -110,53 +104,45 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   fi
 
   log "🔁 Re-running bootstrap as $TAMINARU_USER..."
-  runuser -u "$TAMINARU_USER" -- env FLAVOR="$FLAVOR" bash "$USER_REPO/scripts/bootstrap.sh" "$@"
+  runuser -u "$TAMINARU_USER" -- bash "$USER_REPO/scripts/bootstrap.sh" "$@"
   exit $?
 fi
 
-# Set environment variables for non-interactive installation
-export MISE_SYSTEM_DEPS="auto"
-
-# 1. Install mise if missing
-if command -v mise >/dev/null 2>&1; then
-  MISE_BIN="$(command -v mise)"
-  log "🚀 mise already installed: $(mise --version)"
+# 1. Install Nix if missing (via Determinate Systems installer)
+if command -v nix >/dev/null 2>&1; then
+  log "🚀 Nix already installed: $(nix --version)"
 else
-  log "🚀 Installing mise..."
-  curl -fsSL https://mise.run | sh
-  export PATH="$HOME/.local/bin:$PATH"
-  MISE_BIN="$HOME/.local/bin/mise"
+  log "🚀 Installing Nix (Determinate Systems installer)..."
+  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- --no-confirm
+  # Source nix profile for this session
+  if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  elif [ -f "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
+    . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+  fi
+  export PATH="/nix/var/nix/profiles/default/bin:$HOME/.nix-profile/bin:$PATH"
+  log "✅ Nix installed: $(nix --version)"
 fi
 
-# 2. Provision tools (no-op when already installed; lockfile pins versions)
-# Trust the repo config explicitly (persisted) rather than trusting "/":
-# newer mise ignores trusted_config_paths from a project config, and trusting
-# "/" is a security hole. This makes mise install and every shell that loads
-# the config via MISE_CONFIG_FILE accept it without prompting.
-log "🔐 Trusting $REPO_DIR/mise.toml..."
-"$MISE_BIN" trust "$REPO_DIR/mise.toml"
+# 2. Apply home-manager configuration (tools + dotfiles)
+log "🔧 Applying home-manager configuration..."
+if [ -d "$REPO_DIR/.git" ]; then
+  # If in a git repo, use nix build + activate
+  log "📦 Building home-manager activation package..."
+  nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+    --extra-experimental-features "nix-command flakes" \
+    --out-link "$REPO_DIR/result"
 
-log "🔧 Installing tools from mise.toml..."
-(cd "$REPO_DIR" && "$MISE_BIN" install)
+  log "🔄 Activating home-manager profile..."
+  ./result/activate
+else
+  # Fallback: use nix run directly
+  log "📦 Building and activating via nix run..."
+  nix run "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+    --extra-experimental-features "nix-command flakes"
+fi
 
-# 2b. Global mise config: tools are provisioned from this repo's mise.toml,
-#     which is trusted (see [settings] trusted_config_paths). The managed shell
-#     files under dotfiles/ point mise at it via MISE_CONFIG_FILE, so no symlink
-#     is created here.
-log "🌍 global mise config: \$HOME/Taminaru/mise.toml (via MISE_CONFIG_FILE in dotfiles)"
-
-# 2c. Mammouth Code is provisioned via mise from github:mammouth-ai/code
-#     (see [tool_alias] in mise.toml)
-
-# 3. Apply dotfiles with chezmoi (no symlinks). The source dir is
-#     $REPO_DIR/dotfiles, which holds config in chezmoi's dot_* layout; chezmoi
-#     materializes REAL files into $HOME so the machine stands alone while the
-#     repo stays the single source of truth.
-log "🎯 Applying dotfiles with chezmoi (source: \$REPO_DIR/dotfiles)..."
-CHEZMOI_SOURCE="$REPO_DIR/dotfiles"
-"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply --force
-
-# 3a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
+# 2a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,
 #     state, cache). They are derived state recreated by nvim, but stale
 #     versions (e.g. from an AstroNvim major upgrade) can leave broken
 #     treesitter parsers and plugins behind, so we wipe them each run.
@@ -172,29 +158,21 @@ if [ "$NVIM_WIPE" = "1" ]; then
   done
 fi
 
-# 3b. Install pi packages (coding-agent plugins/extensions) declared in the
-#     "packages" array of ~/.pi/agent/settings.json (applied by chezmoi above).
-#     `pi install` is idempotent: it ensures each package is present and runs
-#     npm install for its dependencies. pi itself is provisioned by mise.
-PI_PACKAGES="$(grep -oE '"npm:[^"]+"' "$HOME/.pi/agent/settings.json" 2>/dev/null | tr -d '"' || true)"
-for pkg in $PI_PACKAGES; do
-  if "$MISE_BIN" x pi -- pi install "$pkg" >/dev/null 2>&1; then
-    log "🧩 pi package ready: $pkg"
-  else
-    warn "could not install pi package: $pkg"
-  fi
-done
-
-# 4. starship, atuin, pwsh/bash profiles and mise activation are all
-#    chezmoi-managed (applied in step 3) — nothing to symlink or write here.
-
-# 5b. Switch the login shell to pwsh (needs pwsh listed in /etc/shells first)
-MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
-PW_SHELL="$MISE_DATA_DIR/installs/powershell/latest/pwsh"
-if [ ! -x "$PW_SHELL" ]; then
-  PW_SHELL="$("$MISE_BIN" which powershell)"
+# 3. Switch the login shell to pwsh (needs pwsh listed in /etc/shells first)
+PW_SHELL="$(command -v pwsh 2>/dev/null || true)"
+if [ -z "$PW_SHELL" ]; then
+  # Try common Nix profile paths
+  for candidate in \
+    "$HOME/.nix-profile/bin/pwsh" \
+    "/nix/var/nix/profiles/default/bin/pwsh" \
+    "$HOME/.local/state/nix/profiles/home-manager/home-path/bin/pwsh"; do
+    if [ -x "$candidate" ]; then
+      PW_SHELL="$candidate"
+      break
+    fi
+  done
 fi
-if [ -x "$PW_SHELL" ]; then
+if [ -n "$PW_SHELL" ] && [ -x "$PW_SHELL" ]; then
   SHELL_READY=1
   if ! grep -qxF "$PW_SHELL" /etc/shells 2>/dev/null; then
     log "🔒 Adding $PW_SHELL to /etc/shells..."
@@ -217,13 +195,5 @@ if [ -x "$PW_SHELL" ]; then
 else
   warn "pwsh not found; skipping login shell change"
 fi
-
-# 6. Apply the default catppuccin theme via the mise-installed pwsh
-log "🎨 Applying catppuccin $FLAVOR theme..."
-(cd "$REPO_DIR" && "$MISE_BIN" x -- pwsh -NoProfile -File "$REPO_DIR/scripts/theme.ps1" "$FLAVOR")
-
-# 6b. The theme switch edits files in the chezmoi source dir; re-apply so the
-#     updated theme reaches $HOME.
-"$MISE_BIN" x chezmoi -- chezmoi --source "$CHEZMOI_SOURCE" apply
 
 log "✅ Done. Log out and back in (or open a new shell), then run: pwsh"

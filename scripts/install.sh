@@ -9,7 +9,7 @@
 #
 # Requires curl, git and sudo to already be installed (see README.md).
 #
-# Env overrides: REPO_URL, REPO_DIR, BRANCH, FLAVOR, TAMINARU_USER
+# Env overrides: REPO_URL, REPO_DIR, BRANCH, TAMINARU_USER
 set -euo pipefail
 
 REPO_URL="${REPO_URL:-https://github.com/TreeHappy/Taminaru.git}"
@@ -21,11 +21,9 @@ warn() { printf '\033[1;33m[taminaru]\033[0m %s\n' "$*"; }
 
 log "✨ Taminaru bootstrap launcher"
 
-for var in FLAVOR TAMINARU_USER; do
-  if [ -n "${!var:-}" ]; then
-    export "$var"
-  fi
-done
+if [ -n "${TAMINARU_USER:-}" ]; then
+  export TAMINARU_USER
+fi
 
 if [ ! -d "$REPO_DIR/.git" ]; then
   if [ -e "$REPO_DIR" ]; then

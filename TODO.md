@@ -9,7 +9,7 @@
 ## Open
 
 * install virtual disks
-  * mise packages
+  * Nix packages
   * Taminaru
 * gh smoother
 * secrets management

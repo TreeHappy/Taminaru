@@ -1,9 +1,0 @@
-# Git identity + credential helper (managed by chezmoi).
-# Tokens live in ~/.config/gh (NOT managed) and are scrubbed from images.
-[credential "https://github.com"]
-	helper = !gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = !gh auth git-credential
-[user]
-	email = 97783479+TreeHappy@users.noreply.github.com
-	name = TreeHappy

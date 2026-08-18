@@ -4,6 +4,8 @@
 *.lock.toml.bak
 Thumbs.db
 
-# carapace writes generated bin shims into ~/.config/carapace/bin at apply
-# time; that path is excluded via dotfiles/.chezmoiignore, so nothing is
-# tracked in the repo for it.
+# Nix build output symlink
+result
+
+# carapace writes generated bin shims into ~/.config/carapace/bin at activation
+# time; nothing is tracked in the repo for it.

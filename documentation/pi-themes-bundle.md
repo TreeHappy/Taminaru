@@ -14,8 +14,8 @@ in use.
 
 ## 2. Current state (before any change)
 
-The repo manages Pi config under `dotfiles/dot_pi/agent/` (the chezmoi source);
-the bootstrap applies it to `~/.pi/agent/` as real files via `chezmoi apply`:
+The repo manages Pi config under `dotfiles/dot_pi/agent/`; home-manager applies
+it to `~/.pi/agent/` as real files via `xdg.configFile`:
 
 - `dotfiles/dot_pi/agent/settings.json` — Pi settings. Currently pins:
   - `"theme": "catppuccin-frappe"`
@@ -26,14 +26,10 @@ the bootstrap applies it to `~/.pi/agent/` as real files via `chezmoi apply`:
   theme format (full official Catppuccin palette in `vars`, standard color
   mapping, `export` block).
 - `scripts/bootstrap.sh`:
-  - §3 applies all dotfiles (incl. `dot_pi/agent/{settings,mcp}.json`) with
-    `chezmoi apply` (no symlinks).
-  - §3b reads `"npm:..."` entries out of the applied `~/.pi/agent/settings.json`
+  - home-manager activation applies all dotfiles (incl. `dot_pi/agent/{settings,mcp}.json`).
+  - §3 reads `"npm:..."` entries out of the applied `~/.pi/agent/settings.json`
     and runs `pi install <pkg>` for each (idempotent). **This is the install
     hook for Pi packages.**
-- `scripts/theme.ps1` + `dotfiles/dot_config/powershell/Modules/Taminaru.Theme/`
-  — separate from Pi; this is a PowerShell/terminal Catppuccin switcher (not Pi
-  UI theming). Don't confuse the two.
 - `dotfiles/dot_config/themes/*.tmTheme` — TextMate theme files for a
   different consumer (nvim/other), unrelated to Pi's JSON themes.
 
@@ -108,20 +104,10 @@ theme's `name` field exactly.
 
 **Pi is now themed entirely by the bundle.** The local
 `dotfiles/dot_pi/agent/themes/*.json` files were deleted, and pi's default is
-`catppuccin-mocha`, which the bundle ships. The `Taminaru.Theme` module sets
-only the theme *name* in `dotfiles/dot_pi/agent/settings.json` — it writes no
-hex values anywhere (it never did for pi) — and falls back to `catppuccin-mocha`
+`catppuccin-mocha`, which the bundle ships. The setting is written directly in
+`dotfiles/dot_pi/agent/settings.json` and falls back to `catppuccin-mocha`
 for `frappe`/`macchiato`, since the bundle provides only `catppuccin-latte` and
 `catppuccin-mocha`.
-
-Mapping used by `Set-TaminaruTheme` for pi:
-
-| Flavor    | pi theme            |
-|-----------|---------------------|
-| latte     | `catppuccin-latte`  |
-| frappe    | `catppuccin-mocha`  |
-| macchiato | `catppuccin-mocha`  |
-| mocha     | `catppuccin-mocha`  |
 
 Trade-off: the terminal dotfiles (ghostty, starship, etc.) can stay on any
 flavor, but **pi supports only latte and mocha** now. If a really dark pi theme
@@ -131,22 +117,22 @@ theme references a background PNG that is not shipped — see §4a.3.)
 ## 6. Verification steps (after any change)
 
 - `pi list` shows `npm:@firstpick/pi-themes-bundle` installed.
-- `~/.pi/agent/settings.json` is a real file applied by chezmoi from the repo's
-  `dotfiles/dot_pi/agent/settings.json` and reads `"theme": "catppuccin-mocha"`.
+- `~/.pi/agent/settings.json` is a real file applied by home-manager from the
+  repo's `dotfiles/dot_pi/agent/settings.json` and reads
+  `"theme": "catppuccin-mocha"`.
 - `dotfiles/dot_pi/agent/themes/` no longer exists; `~/.pi/agent/themes/` is not
   created by the bootstrap.
-- Re-run `bash scripts/bootstrap.sh` and confirm §3b logs
-  `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and §3 applies
-  `settings.json`/`mcp.json` via chezmoi.
+- Re-run `bash scripts/bootstrap.sh` and confirm pi package install logs
+  `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and home-manager
+  applies `settings.json`/`mcp.json`.
 - Restart pi. In `/settings`, `catppuccin-mocha` is the active theme and renders.
 
 ## 7. Key files
 
 | Path                          | Role                                        |
 |-------------------------------|---------------------------------------------|
-| `scripts/bootstrap.sh`        | §3 chezmoi apply; §3b pkg install |
-| `dotfiles/dot_pi/agent/settings.json` | `theme` (mocha default), `packages` (drives §3b installs) |
+| `scripts/bootstrap.sh`        | home-manager activation; pi pkg install |
+| `dotfiles/dot_pi/agent/settings.json` | `theme` (mocha default), `packages` (drives pi install) |
 | ~~`dotfiles/dot_pi/agent/themes/*.json`~~ | removed — pi is plugin-only now |
-| `scripts/theme.ps1`           | PowerShell terminal theme switcher (unrelated to Pi UI) |
 | `dotfiles/dot_config/themes/*.tmTheme` | TextMate themes for another tool (not Pi) |
-| `~/.pi/agent/settings.json`   | live settings (applied by chezmoi) |
+| `~/.pi/agent/settings.json`   | live settings (applied by home-manager) |

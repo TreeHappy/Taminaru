@@ -1,5 +1,0 @@
-# chezmoiignore — paths chezmoi should NOT manage.
-# Patterns match target paths relative to $HOME.
-
-# nvim README is documentation, not runtime config.
-.config/nvim/README.md
