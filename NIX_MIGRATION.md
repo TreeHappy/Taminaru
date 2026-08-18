@@ -149,6 +149,35 @@ Taminaru/
    approach — it generates consistent color configs for all tools from a single
    palette declaration, replacing the manual per-tool color hardcoding.
 
+## TL;DR: Working with this setup
+
+```bash
+# Apply all configs + tools to your system (the one command that matters):
+nix run
+
+# Rebuild after editing home.nix or flake.nix:
+nix build
+./result/activate
+
+# One-liner for the above:
+nix build && ./result/activate
+
+# Update all inputs (nixpkgs, home-manager) to latest:
+nix flake update
+
+# Garbage collect old generations (reclaim disk space):
+nix-collect-garbage --delete-older-than 5d
+
+# See what generations exist:
+nix profile history --profile ~/.nix-profile
+
+# Roll back to previous generation:
+nix profile rollback
+```
+
+**Key concept:** `home.nix` = what you want. `flake.lock` = exact versions pinned.
+Edit `home.nix`, run `nix build && ./result/activate`, commit everything.
+
 ## Testing
 
 After implementation, verify:
@@ -197,3 +226,15 @@ Created a fresh `testuser` account to test the bootstrap from scratch.
 - `opencode` build fails because the flake input's `bun.lock` is stale
   (`lockfile had changes, but lockfile is frozen`). This is an issue in the
   `mammouth-code-nix` flake input, not in our config.
+
+### 2026-08-18: taminaru2 account — migration complete
+
+Switched from testuser to the real `taminaru2` account. Everything works:
+
+- `flake.nix` config renamed to `homeConfigurations.taminaru2`
+- `home.nix` username/homeDirectory set to `taminaru2`
+- All tools on PATH after activation
+- pwsh, fish, starship, nvim all functional
+- Catppuccin Frappe theme applied across all tools
+- `mise.toml` deleted (replaced entirely by Nix)
+- Lean nix config: `auto-optimise-store`, `max-jobs auto`
