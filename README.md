@@ -86,6 +86,33 @@ taminaru -it <container> bash` opens an interactive shell that activates mise
 and starts pwsh — see
 [`documentation/podman-exec.md`](documentation/podman-exec.md).
 
+### SSH access (tunnel in/out)
+
+The bootstrap configures `sshd` with **passwordless key auth** and enables TCP
+forwarding, so you can SSH into this machine and tunnel out of it. It listens on
+port `2222` by default (override with `TAMINARU_SSH_PORT=22 bash scripts/bootstrap.sh`).
+
+* A fresh ed25519 client keypair is generated at `~/.ssh/id_ed25519` and its
+  **private key is printed at the end of the bootstrap** — save it, then connect
+  from anywhere:
+
+  ```bash
+  ssh -i ~/.ssh/id_ed25519 -p 2222 taminaru@<host>
+  ```
+
+* Passwords are disabled (`PasswordAuthentication no`); only key auth is allowed.
+* Ports can be tunneled both ways (`AllowTcpForwarding yes`). Reverse forwards
+  bind to loopback by default; use `ssh -R *:8080:localhost:80 ...` to expose a
+  port on all interfaces (`GatewayPorts clientspecified`).
+
+For a container, map the port (`podman run -p 2222:2222 ...`). Note the
+devcontainer already ships its own sshd on 2222 via the sshd feature, so its
+listener will win over the bootstrap's in that image.
+
+For `-L`/`-R`/`-D`/jump-host tunneling recipes (getting the key out, exposing
+container services on the host, and reaching the container's network from
+outside), see [`documentation/ssh-tunneling.md`](documentation/ssh-tunneling.md).
+
 ### Sharing your terminal (tty-share)
 
 [tty-share](https://tty-share.com) shares your live terminal over the internet

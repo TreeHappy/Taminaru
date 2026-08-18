@@ -51,7 +51,7 @@ fi
 log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential libreadline-dev libicu-dev ...)..."
 $APT_GET update
 $APT_GET install -y curl git sudo unzip xz-utils ca-certificates libicu-dev \
-  libssl3 libgssapi-krb5-2 zlib1g build-essential \
+  libssl3 libgssapi-krb5-2 zlib1g build-essential openssh-server \
   libreadline-dev # readline headers for lazy.nvim's hererocks to build the sandboxed Lua 5.1 needed by image.nvim/magick luarocks
 
 # 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the
@@ -111,6 +111,69 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   log "🔁 Re-running bootstrap as $TAMINARU_USER..."
   runuser -u "$TAMINARU_USER" -- env FLAVOR="$FLAVOR" bash "$USER_REPO/scripts/bootstrap.sh" "$@"
   exit $?
+fi
+
+# 0c. SSH server — passwordless key auth, for tunneling into and out of this
+#     machine. Listens on ${TAMINARU_SSH_PORT} (default 2222, matching the
+#     devcontainer forward). Host keys are created if missing; a fresh ed25519
+#     client keypair is generated once and its private key printed at the end so
+#     you can reach this machine from anywhere with no password. Re-runs are
+#     no-ops (keys kept, drop-in overwritten with identical content).
+TAMINARU_SSH_PORT="${TAMINARU_SSH_PORT:-2222}"
+SSH_DIR="$HOME/.ssh"
+
+if command -v sshd >/dev/null 2>&1; then
+  log "🔑 Ensuring sshd host keys..."
+  sudo ssh-keygen -A
+
+  log "🔐 Generating passwordless SSH client key (ed25519) in $SSH_DIR..."
+  mkdir -p "$SSH_DIR" && chmod 700 "$SSH_DIR"
+  if [ ! -f "$SSH_DIR/id_ed25519" ]; then
+    ssh-keygen -t ed25519 -N "" -f "$SSH_DIR/id_ed25519" -C "taminaru@$(hostname)" >/dev/null
+  fi
+  touch "$SSH_DIR/authorized_keys" && chmod 600 "$SSH_DIR/authorized_keys"
+  grep -qxF "$(cat "$SSH_DIR/id_ed25519.pub")" "$SSH_DIR/authorized_keys" \
+    || cat "$SSH_DIR/id_ed25519.pub" >> "$SSH_DIR/authorized_keys"
+  chmod 600 "$SSH_DIR/id_ed25519"
+
+  log "🔧 Configuring sshd (port $TAMINARU_SSH_PORT, key auth only)..."
+  sudo mkdir -p /etc/ssh/sshd_config.d
+  sudo tee /etc/ssh/sshd_config.d/99-taminaru.conf >/dev/null <<EOF
+Port $TAMINARU_SSH_PORT
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+AllowTcpForwarding yes
+PermitOpen any
+GatewayPorts clientspecified
+EOF
+  grep -q '^Include /etc/ssh/sshd_config.d' /etc/ssh/sshd_config \
+    || sudo sh -c 'echo "Include /etc/ssh/sshd_config.d/*.conf" >> /etc/ssh/sshd_config'
+
+  if [ -d /run/systemd/system ]; then
+    sudo systemctl enable --now ssh >/dev/null 2>&1 \
+      || sudo systemctl enable --now sshd >/dev/null 2>&1 \
+      || warn "could not enable ssh service (starting it directly instead)"
+  fi
+  if ! pgrep -x sshd >/dev/null 2>&1; then
+    sudo /usr/sbin/sshd
+    log "🟢 started sshd"
+  else
+    log "🟢 sshd already running"
+  fi
+
+  if command -v ss >/dev/null 2>&1 && ! ss -tlnp 2>/dev/null | grep -q ":$TAMINARU_SSH_PORT "; then
+    warn "nothing listening on port $TAMINARU_SSH_PORT — a pre-existing sshd may own it; check journalctl -u ssh"
+  fi
+
+  log "🔐 SSH ready — connect with: ssh -i ~/.ssh/id_ed25519 -p $TAMINARU_SSH_PORT $(id -un)@<host>"
+  log "   reverse tunnel (bind on all interfaces): ssh -R *:8080:localhost:80 ... (GatewayPorts clientspecified)"
+  log "   save this PRIVATE KEY to reach this machine passwordlessly from anywhere:"
+  cat "$SSH_DIR/id_ed25519"
+else
+  warn "openssh-server not available; skipping sshd setup"
 fi
 
 # Set environment variables for non-interactive installation
