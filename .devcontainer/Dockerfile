@@ -23,7 +23,7 @@ RUN useradd -m -s /bin/bash taminaru \
     && echo 'taminaru ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/taminaru \
     && chmod 0440 /etc/sudoers.d/taminaru
 
-RUN chown -R taminaru:taminaru /workspaces/taminaru
+RUN chown -R taminaru:taminaru /home/taminaru
 
 # Make pwsh the default shell (needs to be in /etc/shells first).
 USER root
