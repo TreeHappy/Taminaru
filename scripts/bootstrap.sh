@@ -254,7 +254,7 @@ done
 MISE_DATA_DIR="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
 PW_SHELL="$MISE_DATA_DIR/installs/powershell/latest/pwsh"
 if [ ! -x "$PW_SHELL" ]; then
-  PW_SHELL="$("$MISE_BIN" which powershell)"
+  PW_SHELL="$("$MISE_BIN" which pwsh)"
 fi
 if [ -x "$PW_SHELL" ]; then
   SHELL_READY=1
