@@ -26,7 +26,7 @@ mammouth = "github:mammouth-ai/code"
 
 "github:anomalyco/opencode" = "latest"
 "github:earendil-works/pi" = "latest"
-"github:powershell/powershell" = "latest"
+powershell = "7.6.4"
 
 "github:BurntSushi/ripgrep" = "latest"
 "github:starship/starship" = "latest"
