@@ -1,4 +1,4 @@
-![./images/terminal.png](./images/terminal.png)
+![./images/terminal.png](./images/kiddy.png)
 ![./images/currentscreen.png](./images/currentscreen.png)
 ## Usage
 
