@@ -1,0 +1,100 @@
+[mgr]
+cwd = { fg = "#7fbbb3" }
+
+find_keyword  = { fg = "#dbbc7f", bold = true, italic = true, underline = true }
+find_position = { fg = "#d699b6", bg = "reset", bold = true, italic = true }
+
+marker_copied   = { fg = "#a7c080", bg = "#a7c080" }
+marker_cut      = { fg = "#e67e80", bg = "#e67e80" }
+marker_marked   = { fg = "#7fbbb3", bg = "#7fbbb3" }
+marker_selected = { fg = "#dbbc7f", bg = "#dbbc7f" }
+
+count_copied   = { fg = "#343f44", bg = "#a7c080" }
+count_cut      = { fg = "#343f44", bg = "#e67e80" }
+count_selected = { fg = "#343f44", bg = "#dbbc7f" }
+
+border_symbol = "│"
+border_style  = { fg = "#4f585e" }
+
+syntect_theme = "~/.config/yazi/Everforest.tmTheme"
+
+[tabs]
+active   = { fg = "#343f44", bg = "#a7c080", bold = true }
+inactive = { fg = "#a7c080", bg = "#3d484d" }
+
+[mode]
+normal_main = { fg = "#3d484d", bg = "#a7c080", bold = true }
+normal_alt  = { fg = "#7fbbb3", bg = "#4f585e", bold = true }
+select_main = { fg = "#3d484d", bg = "#e67e80", bold = true }
+select_alt  = { fg = "#7fbbb3", bg = "#4f585e", bold = true }
+unset_main  = { fg = "#3d484d", bg = "#7fbbb3", bold = true }
+unset_alt   = { fg = "#7fbbb3", bg = "#4f585e", bold = true }
+
+[status]
+separator_open  = ""
+separator_close = ""
+progress_label  = { bold = true }
+progress_normal = { fg = "#7fbbb3", bg = "#232a2e" }
+progress_error  = { fg = "#e67e80", bg = "#232a2e" }
+perm_type  = { fg = "#a7c080" }
+perm_read  = { fg = "#dbbc7f" }
+perm_write = { fg = "#e67e80" }
+perm_exec  = { fg = "#7fbbb3" }
+perm_sep   = { fg = "#2d353b" }
+
+[pick]
+border   = { fg = "#7fbbb3" }
+active   = { fg = "#d699b6", bold = true }
+inactive = {}
+
+[input]
+border   = { fg = "#7fbbb3" }
+title    = {}
+value    = {}
+selected = { reversed = true }
+
+[confirm]
+border     = { fg = "#7fbbb3" }
+title      = { fg = "#7fbbb3" }
+content    = {}
+list       = {}
+btn_yes    = { reversed = true }
+btn_no     = {}
+
+[completion]
+border = { fg = "#7fbbb3" }
+
+[tasks]
+border  = { fg = "#7fbbb3" }
+title   = {}
+hovered = { fg = "#d699b6", underline = true }
+
+[which]
+mask            = { bg = "#2d353b" }
+cand            = { fg = "#7fbbb3" }
+rest            = { fg = "#2d353b" }
+desc            = { fg = "#d699b6" }
+separator       = " "
+separator_style = { fg = "#2d353b" }
+
+[help]
+on      = { fg = "#7fbbb3" }
+run     = { fg = "#d699b6" }
+hovered = { reversed = true, bold = true }
+footer  = { fg = "#2d353b", bg = "#d3c6aa" }
+
+[notify]
+title_info  = { fg = "#a7c080" }
+title_warn  = { fg = "#dbbc7f" }
+title_error = { fg = "#e67e80" }
+
+[filetype]
+rules = [
+	{ mime = "image/*", fg = "#7fbbb3" },
+	{ mime = "{audio,video}/*", fg = "#d699b6" },
+	{ mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#e67e80" },
+	{ mime = "application/{pdf,doc,rtf}", fg = "#7fbbb3" },
+	{ mime = "vfs/{absent,stale}", fg = "#4f585e" },
+	{ url = "*", fg = "#83c092" },
+	{ url = "*/", fg = "#a7c080" },
+]

@@ -6,8 +6,8 @@ different mechanism and recorded in a different file:
 | Layer | Mechanism | Installed by | Recorded in |
 | --- | --- | --- | --- |
 | System packages | `apt-get` | `scripts/bootstrap.sh` | this doc |
-| Tools | mise | `mise install` (via bootstrap) | `mise.toml` / `mise.lock` |
-| Conda packages | micromamba | manual / bootstrap | `mise.lock` (imagemagick), this doc |
+| Tools | Nix flakes + home-manager | `nix build` / `home-manager switch` | `flake.nix` / `flake.lock` / `home.nix` |
+| Conda packages | micromamba | manual / bootstrap | this doc |
 
 ## Layer 0 — system prerequisites (apt)
 
@@ -26,88 +26,76 @@ The full apt list (`scripts/bootstrap.sh`):
 
 ```bash
 curl git sudo unzip ca-certificates libicu-dev \
-  libssl3 libgssapi-krb5-2 zlib1g build-essential libreadline-dev
+  libssl3 libgssapi-krb5-2 zlib1g build-essential libreadline-dev tmate
 ```
 
 What each is for:
 
 | Package | Why |
 | --- | --- |
-| `curl` | fetches the mise installer (`https://mise.run`) and the bootstrap one-liner |
+| `curl` | fetches the Nix installer and the bootstrap one-liner |
 | `git` | clones/copies the repo; used by the whole toolchain |
 | `sudo` | the few system-wide steps (apt, `/etc/shells`, `chsh`) |
-| `unzip` | used by several installers and mise backends |
-| `ca-certificates` | TLS trust store so curl/git can reach mise.run, GitHub, conda-forge |
-| `libicu-dev` | ICU is required by PowerShell/.NET globalization — mise installs pwsh from a tarball with no apt deps, so the system must provide libicu |
+| `unzip` | used by Nix and various package builds |
+| `ca-certificates` | TLS trust store so curl/git can reach GitHub |
+| `libicu-dev` | ICU is required by PowerShell/.NET globalization |
 | `libssl3` | TLS runtime lib for gh, curl, node, etc. |
 | `libgssapi-krb5-2` | Kerberos/GSSAPI runtime for git/gh network auth |
 | `zlib1g` | compression runtime lib |
 | `build-essential` | `cc`/`gcc` required to compile nvim's treesitter parsers |
+| `tmate` | share live terminal sessions over the internet — hands out an SSH URL and an HTTPS web link for guests |
 | `libreadline-dev` | readline dev headers (pulls in `libncurses-dev`) so lazy.nvim's hererocks can build the sandboxed Lua 5.1 needed by the `image.nvim`/`magick` luarocks |
 
-The devcontainer image additionally bakes in `libicu-dev` and the rest of the
-base image's tooling via `mcr.microsoft.com/devcontainers/base:ubuntu` (see
-`.devcontainer/Dockerfile`).
+## Layer 1 — tools (Nix flakes + home-manager)
 
-## Layer 1 — tools (mise)
+[Nix](https://nixos.org/download/) is installed by the bootstrap via the
+Determinate Systems installer. All tools are declared in `home.nix` and
+provisioned via `home-manager switch` (or `nix build` + activation). Versions
+are pinned in `flake.lock` (auto-generated, don't edit by hand).
 
-[mise](https://mise.jdx.dev) is itself installed by the bootstrap if missing
-(`curl -fsSL https://mise.run | sh`), then every tool in `mise.toml` is
-provisioned with `mise install`. Versions are pinned in `mise.lock`; see
-[`mise-lock.md`](mise-lock.md).
+| Tool | nixpkgs attribute | Purpose |
+| --- | --- | --- |
+| atuin | `atuin` | shell history |
+| bat | `bat` | `cat` clone with syntax highlighting |
+| bottom | `bottom` | system monitor |
+| carapace | `carapace` | shell completion engine |
+| difftastic | `difftastic` | structural `diff` |
+| eza | `eza` | `ls` replacement |
+| fastfetch | `fastfetch` | system info |
+| fd | `fd` | `find` replacement |
+| fzf | `fzf` | fuzzy finder |
+| gdu | `gdu` | disk usage analyzer |
+| gh | `gh` | GitHub CLI |
+| gum | `gum` | styled output for shell scripts |
+| imagemagick | `imagemagick` | image manipulation |
+| jj | `jj` | Jujutsu VCS |
+| lazygit | `lazygit` | git TUI |
+| mammouth | `mammouth` (flake input) | AI coding harness |
+| neovim | `neovim` | editor |
+| opencode | `opencode` | AI coding harness |
+| pi | `pi-coding-agent` | AI coding harness |
+| powershell | `powershell` | shell (default login shell) |
+| ripgrep | `ripgrep` | `grep` replacement |
+| starship | `starship-prompt` | prompt |
+| uv | `uv` | Python package manager |
+| vivid | `vivid` | `LS_COLORS` generator |
+| yazi | `yazi` | terminal file manager |
+| zoxide | `zoxide` | smarter `cd` |
+| fish | `fish` | interactive shell |
 
-| Tool | Version | Purpose | Backend |
-| --- | --- | --- | --- |
-| atuin | 18.19.0 | shell history | `aqua:atuinsh/atuin` |
-| bat | 0.26.1 | `cat` clone with syntax highlighting | `aqua:sharkdp/bat` |
-| bottom | 0.14.8 | system monitor | `aqua:ClementTsang/bottom` |
-| carapace | 1.7.3 | shell completion engine | `aqua:carapace-sh/carapace-bin` |
-| difftastic | 0.70.0 | structural `diff` | `aqua:Wilfred/difftastic` |
-| dotnet | 10.0.400 | .NET SDK (required by the nvim `cs` pack) | `core` |
-| eza | 0.23.5 | `ls` replacement | `aqua:eza-community/eza` |
-| fastfetch | 2.67.1 | system info | `aqua:fastfetch-cli/fastfetch` |
-| fd | 10.4.2 | `find` replacement | `aqua:sharkdp/fd` |
-| fzf | 0.74.2 | fuzzy finder | `aqua:junegunn/fzf` |
-| gdu | 5.36.1 | disk usage analyzer | `aqua:dundee/gdu` |
-| gh | 2.97.0 | GitHub CLI | `aqua:cli/cli` |
-| gum | 0.17.0 | styled output for shell scripts | `aqua:charmbracelet/gum` |
-| imagemagick | 7.1.2_27 | image manipulation (conda build) | `conda:imagemagick` |
-| jj | 0.44.0 | Jujutsu VCS | `aqua:jj-vcs/jj` |
-| lazygit | 0.64.1 | git TUI | `aqua:jesseduffield/lazygit` |
-| mammouth | 1.17.11.2 | AI coding harness (via `[tool_alias]`) | `github:mammouth-ai/code` |
-| micromamba | 2.9.0-0 | conda package manager (Layer 2) | `github:mamba-org/micromamba-releases` |
-| neovim | 0.12.4 | editor | `vfox:mise-plugins/vfox-neovim` |
-| node | 24.19.0 (lts) | JS runtime | `core:node` |
-| opencode | 1.18.18 | AI coding harness | `aqua:anomalyco/opencode` |
-| pi | 0.84.2 | AI coding harness | `aqua:earendil-works/pi` |
-| powershell | 7.6.5 | shell (default login shell) | `aqua:PowerShell/PowerShell` |
-| ripgrep | 15.2.0 | `grep` replacement | `aqua:BurntSushi/ripgrep` |
-| starship | 1.26.0 | prompt | `aqua:starship/starship` |
-| vivid | 0.11.1 | `LS_COLORS` generator | `aqua:sharkdp/vivid` |
-| yazi | 26.8.15 | terminal file manager | `aqua:sxyazi/yazi` |
-| zoxide | 0.10.0 | smarter `cd` | `aqua:ajeetdsouza/zoxide` |
 
-Each tool's config lives in `config/<tool>/` and is symlinked into
-`~/.config/<tool>/` by the bootstrap, so the repo stays the single source of
-truth.
+Each tool's config lives in `dotfiles/config/<tool>/` and is applied to
+`~/.config/<tool>/` as real files by home-manager via `xdg.configFile`, so the
+repo stays the single source of truth without symlinks.
 
 ## Layer 2 — conda packages (micromamba)
 
-micromamba (Layer 1) is the conda package manager. Two things come from
+micromamba (manual install) is the conda package manager. Two things come from
 conda-forge:
-
-### imagemagick
-
-mise manages imagemagick itself via the `conda:` backend
-(`imagemagick = "latest"` in `mise.toml`). It resolves to a conda-forge build
-whose transitive dependency tree (libjpeg-turbo, libpng, libtiff, openjpeg,
-librsvg, graphviz, xorg libs, fonts, ...) is recorded as `conda_deps` in
-`mise.lock`. Because these are pinned + checksummed there, imagemagick and all
-its shared libraries are installed reproducibly.
 
 ### lua + luarocks (documented manual step)
 
-Not in `mise.toml`, installed manually into the micromamba base env:
+Not in `home.nix`, installed manually:
 
 ```bash
 micromamba install -c conda-forge lua luarocks
@@ -137,8 +125,8 @@ by default).
 apt-cache policy libicu-dev libssl3 build-essential libreadline-dev
 
 # Layer 1
-mise ls                     # every tool + installed version
-grep '^\[\[tools\.' mise.lock
+nix profile list                     # every Nix package
+nix eval .#homeConfigurations.codespace.config.home.packages --json | jq length
 
 # Layer 2
 micromamba list | grep -E '^lua|luarocks'
@@ -148,8 +136,6 @@ luarocks --version          # 3.13.0
 
 ## Notes
 
-- `mise.lock` is auto-generated; don't edit by hand (see `mise-lock.md`).
+- `flake.lock` is auto-generated by Nix; don't edit by hand.
 - The apt list and all managed files are written by `scripts/bootstrap.sh` —
   keep that script and this doc in sync when dependencies change.
-- Tools dropped from `mise.toml` leave stale `~/.config/<tool>` symlinks; the
-  bootstrap prunes them (`scripts/bootstrap.sh`).

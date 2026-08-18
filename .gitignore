@@ -4,5 +4,8 @@
 *.lock.toml.bak
 Thumbs.db
 
-# carapace generates these bin shims (absolute paths) from specs/*.yaml
-config/carapace/bin/
+# Nix build output symlink
+result
+
+# carapace writes generated bin shims into ~/.config/carapace/bin at activation
+# time; nothing is tracked in the repo for it.

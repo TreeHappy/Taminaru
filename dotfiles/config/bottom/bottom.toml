@@ -1,0 +1,70 @@
+[styles]
+# Catppuccin Frappe theme for bottom (btm)
+# https://github.com/ClementTsang/bottom
+
+# Widget border and graph colors
+border_color = "#737994"
+highlighted_border = "#8caaee"
+text_color = "#c6d0f5"
+deeper_text_color = "#a5adce"
+disabled_text_color = "#626880"
+
+# CPU colors
+cpu_core_colors = [
+  "#8caaee",
+  "#a6d189",
+  "#ef9f76",
+  "#ca9ee6",
+  "#f4b8e4",
+  "#81c8be",
+  "#e5c890",
+  "#fab387",
+]
+
+# Memory colors
+ram_color = "#8caaee"
+swap_color = "#ef9f76"
+
+# Disk colors
+disk_color = "#a6d189"
+
+# Network colors
+rx_color = "#a6d189"
+tx_color = "#e78284"
+
+# Temperature colors
+high_temp_color = "#e78284"
+medium_temp_color = "#ef9f76"
+low_temp_color = "#a6d189"
+
+# Battery colors
+high_battery_color = "#a6d189"
+medium_battery_color = "#e5c890"
+low_battery_color = "#e78284"
+crit_battery_color = "#e78284"
+
+# Widget title colors
+widget_title_color = "#8caaee"
+
+# Graph colors
+graph_color = "#c6d0f5"
+graph_border_color = "#737994"
+
+# Table colors
+table_header_color = "#8caaee"
+table_row_color = "#c6d0f5"
+table_alt_row_color = "#414559"
+
+# Selected text
+selected_text_color = "#303446"
+selected_bg_color = "#8caaee"
+
+# pct bar
+pct_bar_color = "#8caaee"
+pct_inf_color = "#737994"
+
+# Temperature unit color
+unit_color = "#a5adce"
+
+# Idle widget color
+idle_color = "#737994"

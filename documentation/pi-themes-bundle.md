@@ -4,7 +4,7 @@
 > themes are wired into this dotfiles repo, what the
 > `@firstpick/pi-themes-bundle` package provides, and how/why the bootstrap was
 > (or was not) changed. Read this before touching `scripts/bootstrap.sh`,
-> `config/pi/settings.json`, or `config/pi/themes/`.
+> `dotfiles/pi/agent/settings.json`, or `dotfiles/pi/agent/themes/`.
 
 ## 1. Task
 
@@ -14,26 +14,23 @@ in use.
 
 ## 2. Current state (before any change)
 
-The repo manages Pi config under `config/pi/` and the bootstrap symlinks it into
-`~/.pi/agent/`:
+The repo manages Pi config under `dotfiles/pi/agent/`; home-manager applies
+it to `~/.pi/agent/` as real files via `xdg.configFile`:
 
-- `config/pi/settings.json` — Pi settings. Currently pins:
+- `dotfiles/pi/agent/settings.json` — Pi settings. Currently pins:
   - `"theme": "catppuccin-frappe"`
   - `"packages": ["npm:pi-mcp-adapter", "npm:@maxpaulus/pi-cline"]`
-- `config/pi/themes/*.json` — **local** Pi themes for all four Catppuccin
-  flavors: `catppuccin-frappe`, `catppuccin-latte`, `catppuccin-macchiato`,
-  `catppuccin-mocha`. These are written in Pi's JSON theme format (full
-  official Catppuccin palette in `vars`, standard color mapping, `export` block).
+- `dotfiles/pi/agent/themes/*.json` — **local** Pi themes for all four
+  Catppuccin flavors: `catppuccin-frappe`, `catppuccin-latte`,
+  `catppuccin-macchiato`, `catppuccin-mocha`. These are written in Pi's JSON
+  theme format (full official Catppuccin palette in `vars`, standard color
+  mapping, `export` block).
 - `scripts/bootstrap.sh`:
-  - §3c symlinks `config/pi/themes/*.json` → `~/.pi/agent/themes/`, and links
-    `settings.json` + `mcp.json` → `~/.pi/agent/`.
-  - §3d reads `"npm:..."` entries out of the symlinked `settings.json` and runs
-    `pi install <pkg>` for each (idempotent). **This is the install hook for Pi
-    packages.**
-- `scripts/theme.ps1` + `config/powershell/Modules/Taminaru.Theme/` — separate
-  from Pi; this is a PowerShell/terminal Catppuccin switcher (not Pi UI
-  theming). Don't confuse the two.
-- `config/themes/*.tmTheme` (top-level `themes/`) — TextMate theme files for a
+   - home-manager activation applies all dotfiles (incl. `pi/agent/{settings,mcp}.json`).
+  - §3 reads `"npm:..."` entries out of the applied `~/.pi/agent/settings.json`
+    and runs `pi install <pkg>` for each (idempotent). **This is the install
+    hook for Pi packages.**
+- `dotfiles/config/themes/*.tmTheme` — TextMate theme files for a
   different consumer (nvim/other), unrelated to Pi's JSON themes.
 
 **Conclusion: the bundle is NOT currently used.** Pi's Catppuccin comes from
@@ -105,21 +102,12 @@ theme's `name` field exactly.
 
 ## 5. Decision — plugin-only (adopted)
 
-**Pi is now themed entirely by the bundle.** The local `config/pi/themes/*.json`
-files were deleted, and pi's default is `catppuccin-mocha`, which the bundle
-ships. The `Taminaru.Theme` module sets only the theme *name* in
-`config/pi/settings.json` — it writes no hex values anywhere (it never did for
-pi) — and falls back to `catppuccin-mocha` for `frappe`/`macchiato`, since the
-bundle provides only `catppuccin-latte` and `catppuccin-mocha`.
-
-Mapping used by `Set-TaminaruTheme` for pi:
-
-| Flavor    | pi theme            |
-|-----------|---------------------|
-| latte     | `catppuccin-latte`  |
-| frappe    | `catppuccin-mocha`  |
-| macchiato | `catppuccin-mocha`  |
-| mocha     | `catppuccin-mocha`  |
+**Pi is now themed entirely by the bundle.** The local
+`dotfiles/pi/agent/themes/*.json` files were deleted, and pi's default is
+`catppuccin-mocha`, which the bundle ships. The setting is written directly in
+`dotfiles/pi/agent/settings.json` and falls back to `catppuccin-mocha`
+for `frappe`/`macchiato`, since the bundle provides only `catppuccin-latte` and
+`catppuccin-mocha`.
 
 Trade-off: the terminal dotfiles (ghostty, starship, etc.) can stay on any
 flavor, but **pi supports only latte and mocha** now. If a really dark pi theme
@@ -129,22 +117,22 @@ theme references a background PNG that is not shipped — see §4a.3.)
 ## 6. Verification steps (after any change)
 
 - `pi list` shows `npm:@firstpick/pi-themes-bundle` installed.
-- `~/.pi/agent/settings.json` is a symlink to the repo's
-  `config/pi/settings.json` and reads `"theme": "catppuccin-mocha"`.
-- `config/pi/themes/` no longer exists; `~/.pi/agent/themes/` is not created by
-  the bootstrap.
-- Re-run `bash scripts/bootstrap.sh` and confirm §3d logs
-  `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and §3c links only
-  `settings.json`/`mcp.json`.
+- `~/.pi/agent/settings.json` is a real file applied by home-manager from the
+  repo's `dotfiles/pi/agent/settings.json` and reads
+  `"theme": "catppuccin-mocha"`.
+- `dotfiles/pi/agent/themes/` no longer exists; `~/.pi/agent/themes/` is not
+  created by the bootstrap.
+- Re-run `bash scripts/bootstrap.sh` and confirm pi package install logs
+  `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and home-manager
+  applies `settings.json`/`mcp.json`.
 - Restart pi. In `/settings`, `catppuccin-mocha` is the active theme and renders.
 
 ## 7. Key files
 
 | Path                          | Role                                        |
 |-------------------------------|---------------------------------------------|
-| `scripts/bootstrap.sh`        | §3c themes/settings symlinks; §3d pkg install |
-| `config/pi/settings.json`     | `theme` (mocha default), `packages` (drives §3d installs) |
-| ~~`config/pi/themes/*.json`~~  | removed — pi is plugin-only now |
-| `scripts/theme.ps1`           | PowerShell terminal theme switcher (unrelated to Pi UI) |
-| `config/themes/*.tmTheme`     | TextMate themes for another tool (not Pi)   |
-| `~/.pi/agent/settings.json`   | live settings (symlinked to the repo)       |
+| `scripts/bootstrap.sh`        | home-manager activation; pi pkg install |
+| `dotfiles/pi/agent/settings.json` | `theme` (mocha default), `packages` (drives pi install) |
+| ~~`dotfiles/pi/agent/themes/*.json`~~ | removed — pi is plugin-only now |
+| `dotfiles/config/themes/*.tmTheme` | TextMate themes for another tool (not Pi) |
+| `~/.pi/agent/settings.json`   | live settings (applied by home-manager) |

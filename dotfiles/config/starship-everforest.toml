@@ -1,0 +1,40 @@
+# Everforest Dark palette
+
+[character]
+success_symbol = "[ 🎏](bold #a7c080)"
+error_symbol = "[ 👹](bold #e67e80)"
+[git_branch]
+symbol = "🌿 "
+style = "bold #dbbc7f"
+[time]
+format = "%H:%M:%S"
+style = "bold #7fbbb3"
+[username]
+style_user = "bold #a7c080"
+style_root = "bold #e67e80"
+format = "[$user]($style)"
+disabled = false
+[hostname]
+ssh_only = true
+format = "[@$hostname](bold #a7c080)"
+[directory]
+style = "bold #a7c080"
+format = "[$path]($style) "
+truncation_length = 3
+truncation_symbol = "…/"
+[git_status]
+conflicted = "💣"
+ahead = "📤"
+behind = "📥"
+diverged = "😵"
+untracked = "★"
+stashed = "📦"
+modified = ""
+staged = "✓"
+renamed = "🗘"
+deleted = ""
+style = "bold #e67e80"
+[docker_context]
+symbol = " 🐳 "
+style = "bold #7fbbb3"
+format = "[$symbol$context]($style)"

@@ -1,9 +1,0 @@
-# atuin config (managed by scripts/bootstrap.sh)
-db_path = "~/.local/share/atuin/history.db"
-
-[ai]
-enabled = true
-
-[ai.opening]
-send_cwd = true
-send_last_command = true
