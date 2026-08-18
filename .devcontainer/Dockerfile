@@ -18,12 +18,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN chown -R taminaru:taminaru /workspaces/Taminaru
+# Non-root user (matches devcontainer.json "remoteUser") with passwordless sudo.
+RUN useradd -m -s /bin/bash taminaru \
+    && echo 'taminaru ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/taminaru \
+    && chmod 0440 /etc/sudoers.d/taminaru
 
-USER taminaru
+RUN chown -R taminaru:taminaru /workspaces/taminaru
 
 # Make pwsh the default shell (needs to be in /etc/shells first).
 USER root
 RUN echo '/home/taminaru/.local/bin/pwsh' >> /etc/shells \
     && chsh -s /home/taminaru/.local/bin/pwsh taminaru
 USER taminaru
+WORKDIR /home/taminaru
