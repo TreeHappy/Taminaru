@@ -108,9 +108,9 @@
   # ── Git ──────────────────────────────────────────────────────────────
   programs.git = {
     enable = true;
-    userName = "TreeHappy";
-    userEmail = "97783479+TreeHappy@users.noreply.github.com";
-    extraConfig = {
+    settings = {
+      user.name = "TreeHappy";
+      user.email = "97783479+TreeHappy@users.noreply.github.com";
       credential."https://github.com".helper = "!gh auth git-credential";
       credential."https://gist.github.com".helper = "!gh auth git-credential";
     };

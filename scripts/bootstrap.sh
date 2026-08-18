@@ -170,7 +170,7 @@ if [ -d "$REPO_DIR/.git" ]; then
     --out-link "$REPO_DIR/result"
 
   log "🔄 Activating home-manager profile..."
-  ./result/activate
+  "$REPO_DIR/result/activate"
 else
   # Fallback: use nix run directly
   log "📦 Building and activating via nix run..."
