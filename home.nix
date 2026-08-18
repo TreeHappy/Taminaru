@@ -1,4 +1,4 @@
-{ config, pkgs, mammouth-pkg, ... }:
+{ config, pkgs, ... }:
 
 {
   home.username = "taminaru";
@@ -35,10 +35,6 @@
     yazi
     zoxide
     fish
-
-
-    # Tools not in nixpkgs — from flake inputs
-    mammouth-pkg
   ];
 
   # ── Shell: Bash (minimal — hands off to pwsh) ────────────────────────

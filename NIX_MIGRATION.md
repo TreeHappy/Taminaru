@@ -69,7 +69,7 @@ Taminaru/
 | imagemagick | `imagemagick` |
 | jj | `jj` |
 | lazygit | `lazygit` |
-| mammouth | NOT in nixpkgs → flake input |
+| mammouth | REMOVED (not in nixpkgs, upstream lockfile broken) |
 | neovim | `neovim` |
 | opencode | `opencode` |
 | pi | `pi-coding-agent` |
@@ -135,7 +135,8 @@ Taminaru/
 2. **PowerShell profile stays as raw file** — `xdg.configFile` copies the
    powershell/ dir. The pwsh profile is too complex for home-manager modules.
 
-3. **mammouth** is fetched via a third-party flake input since it's not in nixpkgs.
+3. **mammouth removed** — not in nixpkgs, third-party flake had stale
+   `bun.lock` causing build failures. Can be re-added later if upstream fixes.
 
 4. **Default shell** is still pwsh. home-manager doesn't manage system-level
    shell changes — bootstrap.sh still runs `chsh`.
