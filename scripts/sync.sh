@@ -16,7 +16,7 @@ log "📥 Pulling latest Taminaru..."
 git -C "$REPO_DIR" pull --ff-only
 
 log "🔧 Rebuilding home-manager configuration..."
-nix build "$REPO_DIR#homeConfigurations.taminaru2.activationPackage" \
+nix build "$REPO_DIR#homeConfigurations.codespace.activationPackage" \
   --extra-experimental-features "nix-command flakes" \
   --out-link "$REPO_DIR/result"
 

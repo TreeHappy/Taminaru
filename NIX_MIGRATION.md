@@ -227,12 +227,12 @@ Created a fresh `testuser` account to test the bootstrap from scratch.
   (`lockfile had changes, but lockfile is frozen`). This is an issue in the
   `mammouth-code-nix` flake input, not in our config.
 
-### 2026-08-18: taminaru2 account — migration complete
+### 2026-08-18: codespace account — migration complete
 
-Switched from testuser to the real `taminaru2` account. Everything works:
+Switched from testuser to the real `codespace` account. Everything works:
 
-- `flake.nix` config renamed to `homeConfigurations.taminaru2`
-- `home.nix` username/homeDirectory set to `taminaru2`
+- `flake.nix` config renamed to `homeConfigurations.codespace`
+- `home.nix` username/homeDirectory set to `codespace`
 - All tools on PATH after activation
 - pwsh, fish, starship, nvim all functional
 - Catppuccin Frappe theme applied across all tools
