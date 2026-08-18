@@ -7,7 +7,7 @@
             "VARIANT": "ubuntu"
         }
     },
-    "remoteUser": "vscode",
+    "remoteUser": "taminaru",
     "containerEnv": {
         "MISE_TRUST_ALL": "1",
         "DEBIAN_FRONTEND": "noninteractive",
