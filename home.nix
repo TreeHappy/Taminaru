@@ -230,7 +230,6 @@
   xdg.configFile = {
     # ── Neovim (AstroNvim) ──
     "nvim/init.lua".source = ./dotfiles/config/nvim/init.lua;
-    "nvim/lazy-lock.json".source = ./dotfiles/config/nvim/lazy-lock.json;
     "nvim/neovim.yml".source = ./dotfiles/config/nvim/neovim.yml;
     "nvim/selene.toml".source = ./dotfiles/config/nvim/selene.toml;
     "nvim/README.md".source = ./dotfiles/config/nvim/README.md;
