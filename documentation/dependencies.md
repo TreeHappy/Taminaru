@@ -126,7 +126,7 @@ apt-cache policy libicu-dev libssl3 build-essential libreadline-dev
 
 # Layer 1
 nix profile list                     # every Nix package
-nix eval .#homeConfigurations.taminaru.config.home.packages --json | jq length
+nix eval .#homeConfigurations.taminaru2.config.home.packages --json | jq length
 
 # Layer 2
 micromamba list | grep -E '^lua|luarocks'
