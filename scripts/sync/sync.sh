@@ -37,12 +37,12 @@ sync_apply() {
       if ! nix store ping --extra-experimental-features "nix-command" 2>/dev/null; then
         log "Restarting stale nix-daemon..."
         sudo rm -f /nix/var/nix/daemon-socket/socket
-        sudo /nix/var/nix/profiles/default/bin/nix-daemon &
+        sudo nohup /nix/var/nix/profiles/default/bin/nix-daemon >/dev/null 2>&1 &
         sleep 2
       fi
     else
       log "Starting nix-daemon..."
-      sudo /nix/var/nix/profiles/default/bin/nix-daemon &
+      sudo nohup /nix/var/nix/profiles/default/bin/nix-daemon >/dev/null 2>&1 &
       sleep 2
     fi
   fi
