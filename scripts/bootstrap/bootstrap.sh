@@ -13,15 +13,15 @@
 #
 # Running as root on a fresh Ubuntu first creates a non-root user (default:
 # taminaru, pinned uid 1000, passwordless with NOPASSWD sudo) via
-# scripts/provision-user.sh — the same script the devcontainer Dockerfile
-# uses — copies this repo into their home, and re-runs the whole bootstrap as
-# that user.
+# scripts/bootstrap/provision-user.sh — the same script the devcontainer
+# Dockerfile uses — copies this repo into their home, and re-runs the whole
+# bootstrap as that user.
 #
-# Usage: bash scripts/bootstrap.sh
-#        TAMINARU_USER=bob TAMINARU_UID=1000 bash scripts/bootstrap.sh
+# Usage: bash scripts/bootstrap/bootstrap.sh
+#        TAMINARU_USER=bob TAMINARU_UID=1000 bash scripts/bootstrap/bootstrap.sh
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TAMINARU_USER="${TAMINARU_USER:-taminaru}"
 TAMINARU_UID="${TAMINARU_UID:-1000}"
 # Exported so the runuser re-run below and the flake (which reads
@@ -67,7 +67,7 @@ fi
 #     don't have to use root, then re-run the rest of this script as that user.
 if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   log "👤 Provisioning user $TAMINARU_USER (uid $TAMINARU_UID, NOPASSWD sudo)..."
-  bash "$REPO_DIR/scripts/provision-user.sh"
+  bash "$REPO_DIR/scripts/bootstrap/provision-user.sh"
 
   USER_HOME="$(getent passwd "$TAMINARU_USER" | cut -d: -f6)"
   USER_REPO="$USER_HOME/Taminaru"
@@ -78,7 +78,7 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   fi
 
   log "🔁 Re-running bootstrap as $TAMINARU_USER..."
-  runuser -u "$TAMINARU_USER" -- bash "$USER_REPO/scripts/bootstrap.sh" "$@"
+  runuser -u "$TAMINARU_USER" -- bash "$USER_REPO/scripts/bootstrap/bootstrap.sh" "$@"
   exit $?
 fi
 

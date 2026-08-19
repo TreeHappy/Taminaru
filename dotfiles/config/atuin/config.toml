@@ -1,4 +1,4 @@
-# atuin config (managed by scripts/bootstrap.sh)
+# atuin config (managed by scripts/bootstrap/bootstrap.sh)
 db_path = "~/.local/share/atuin/history.db"
 
 [theme]

@@ -102,13 +102,13 @@ apt-get install -y curl git sudo
 Then provision everything with a single command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/bootstrap/install.sh | bash
 ```
 
 Or, if you already have the repo cloned, run the bootstrap directly:
 
 ```bash
-bash scripts/bootstrap.sh
+bash scripts/bootstrap/bootstrap.sh
 ```
 
 Inside unprivileged containers (plain `docker run`, rootless podman) the script
@@ -121,8 +121,8 @@ The repo's `home.nix` and `dotfiles/` are the single source of truth. Config is
 applied to `$HOME` via home-manager (real files, no symlinks).
 
 ```bash
-bash scripts/sync.sh        # git pull + nix build + activate (repo → $HOME)
-bash scripts/sync-push.sh   # commit + push any repo changes
+bash scripts/sync/sync.sh              # apply: git pull + nix build + activate (repo → $HOME)
+bash scripts/sync/sync.sh push         # commit + push any repo changes
 ```
 
 Running as root (e.g. right after a fresh Ubuntu install) first creates a
@@ -130,7 +130,7 @@ non-root user — default name `taminaru`, pinned uid 1000, passwordless with
 NOPASSWD sudo, overridable via `TAMINARU_USER=bob` and `TAMINARU_UID=1000` —
 copies this repo into that user's home, and re-runs the rest of the bootstrap
 as them, so you never have to use root. The user is provisioned by
-[`scripts/provision-user.sh`](scripts/provision-user.sh), the same script the
+[`scripts/bootstrap/provision-user.sh`](scripts/bootstrap/provision-user.sh), the same script the
 [devcontainer Dockerfile](.devcontainer/Dockerfile) uses, so the user
 definition can't drift. `TAMINARU_USER` also drives the flake (`nix build
 .#homeConfigurations.<user>`), so an override applies end-to-end. See
@@ -154,7 +154,7 @@ via home-manager (a real copy, not a symlink) — the repo stays the single sour
 of truth.
 
 Edit `dotfiles/config/powershell/profile.ps1` in the repo, then
-`bash scripts/sync.sh` to re-apply it. Don't edit the bare `$PROFILE` — that
+`bash scripts/sync/sync.sh` to re-apply it. Don't edit the bare `$PROFILE` — that
 points to `~/.config/powershell/Microsoft.PowerShell_profile.ps1`, which
 Taminaru neither creates nor loads.
 
@@ -163,5 +163,5 @@ Taminaru neither creates nor loads.
 Pull the latest changes and re-apply:
 
 ```bash
-git -C ~/Taminaru pull && bash ~/Taminaru/scripts/sync.sh
+git -C ~/Taminaru pull && bash ~/Taminaru/scripts/sync/sync.sh
 ```

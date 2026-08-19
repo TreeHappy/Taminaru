@@ -3,13 +3,13 @@
 > **Purpose:** Self-contained notes for the agent (and future me) on how Pi
 > themes are wired into this dotfiles repo, what the
 > `@firstpick/pi-themes-bundle` package provides, and how/why the bootstrap was
-> (or was not) changed. Read this before touching `scripts/bootstrap.sh`,
+> (or was not) changed. Read this before touching `scripts/bootstrap/bootstrap.sh`,
 > `dotfiles/pi/agent/settings.json`, or `dotfiles/pi/agent/themes/`.
 
 ## 1. Task
 
 Use the `@firstpick/pi-themes-bundle` package for Pi's Catppuccin theme,
-updating `scripts/bootstrap.sh` **only if** that bundle is not already the one
+updating `scripts/bootstrap/bootstrap.sh` **only if** that bundle is not already the one
 in use.
 
 ## 2. Current state (before any change)
@@ -25,7 +25,7 @@ it to `~/.pi/agent/` as real files via `xdg.configFile`:
   `catppuccin-macchiato`, `catppuccin-mocha`. These are written in Pi's JSON
   theme format (full official Catppuccin palette in `vars`, standard color
   mapping, `export` block).
-- `scripts/bootstrap.sh`:
+- `scripts/bootstrap/bootstrap.sh`:
    - home-manager activation applies all dotfiles (incl. `pi/agent/{settings,mcp}.json`).
   - §3 reads `"npm:..."` entries out of the applied `~/.pi/agent/settings.json`
     and runs `pi install <pkg>` for each (idempotent). **This is the install
@@ -122,7 +122,7 @@ theme references a background PNG that is not shipped — see §4a.3.)
   `"theme": "catppuccin-mocha"`.
 - `dotfiles/pi/agent/themes/` no longer exists; `~/.pi/agent/themes/` is not
   created by the bootstrap.
-- Re-run `bash scripts/bootstrap.sh` and confirm pi package install logs
+- Re-run `bash scripts/bootstrap/bootstrap.sh` and confirm pi package install logs
   `🧩 pi package ready: npm:@firstpick/pi-themes-bundle`, and home-manager
   applies `settings.json`/`mcp.json`.
 - Restart pi. In `/settings`, `catppuccin-mocha` is the active theme and renders.
@@ -131,7 +131,7 @@ theme references a background PNG that is not shipped — see §4a.3.)
 
 | Path                          | Role                                        |
 |-------------------------------|---------------------------------------------|
-| `scripts/bootstrap.sh`        | home-manager activation; pi pkg install |
+| `scripts/bootstrap/bootstrap.sh`        | home-manager activation; pi pkg install |
 | `dotfiles/pi/agent/settings.json` | `theme` (mocha default), `packages` (drives pi install) |
 | ~~`dotfiles/pi/agent/themes/*.json`~~ | removed — pi is plugin-only now |
 | `dotfiles/config/themes/*.tmTheme` | TextMate themes for another tool (not Pi) |

@@ -28,5 +28,5 @@
             ]
         }
     },
-    "postCreateCommand": "rm -f /home/taminaru/.profile /home/taminaru/.bashrc && bash ${containerWorkspaceFolder}/scripts/bootstrap.sh"
+    "postCreateCommand": "rm -f /home/taminaru/.profile /home/taminaru/.bashrc && bash ${containerWorkspaceFolder}/scripts/bootstrap/bootstrap.sh"
 }

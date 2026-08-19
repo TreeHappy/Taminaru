@@ -2,15 +2,15 @@
 #
 # provision-user.sh — the single, idempotent implementation of Taminaru's
 # non-root user. Used by both .devcontainer/Dockerfile (image build) and
-# scripts/bootstrap.sh (bare-Ubuntu / root-shell path), so the user definition
-# can't drift between the two.
+# scripts/bootstrap/bootstrap.sh (bare-Ubuntu / root-shell path), so the user
+# definition can't drift between the two.
 #
 # Creates the user if missing (pinned UID), grants passwordless sudo via a
 # managed /etc/sudoers.d drop-in, ensures the @includedir directive, and
 # verifies the grant actually works before returning.
 #
 # Usage (as root):
-#   TAMINARU_USER=taminaru TAMINARU_UID=1000 bash scripts/provision-user.sh
+#   TAMINARU_USER=taminaru TAMINARU_UID=1000 bash scripts/bootstrap/provision-user.sh
 set -euo pipefail
 
 TAMINARU_USER="${TAMINARU_USER:-taminaru}"

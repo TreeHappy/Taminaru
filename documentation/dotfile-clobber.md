@@ -65,7 +65,7 @@ home-manager switch
 ```
 
 or, on a fresh devcontainer, just rebuild the container — the
-`postCreateCommand` runs `scripts/bootstrap.sh`, whose `nix build` + activation
+`postCreateCommand` runs `scripts/bootstrap/bootstrap.sh`, whose `nix build` + activation
 picks up the new `home.nix`.
 
 ## Verifying

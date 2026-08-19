@@ -29,7 +29,8 @@ well-known Nix issue (NixOS/nix#11810) and is not specific to Taminaru.
 
 ## Fix
 
-`scripts/bootstrap.sh` detects this at bootstrap time and builds unsandboxed:
+`scripts/bootstrap/bootstrap.sh` detects this at bootstrap time and builds
+unsandboxed:
 
 - When installing Nix it passes `--extra-conf "sandbox = false"` to the
   Determinate installer (the officially recommended approach for Podman), which
@@ -38,8 +39,8 @@ well-known Nix issue (NixOS/nix#11810) and is not specific to Taminaru.
 - It also rewrites `sandbox = false` into `/etc/nix/nix.custom.conf` on every
   run, and passes `--option sandbox false` to the home-manager build itself.
 
-So all builds — including later `scripts/sync.sh` runs and the `nix-daemon` —
-run unsandboxed.
+So all builds — including later `scripts/sync/sync.sh` runs and the
+`nix-daemon` — run unsandboxed.
 
 Detection is automatic when:
 
@@ -57,5 +58,5 @@ docker run --privileged -it ubuntu:devel
 Or force sandboxing back on regardless of detection:
 
 ```bash
-TAMINARU_SANDBOX=1 bash scripts/bootstrap.sh
+TAMINARU_SANDBOX=1 bash scripts/bootstrap/bootstrap.sh
 ```

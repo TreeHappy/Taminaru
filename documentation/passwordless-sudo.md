@@ -1,6 +1,6 @@
 # Passwordless sudo
 
-`scripts/bootstrap.sh` needs root only for a few system-wide steps (apt
+`scripts/bootstrap/bootstrap.sh` needs root only for a few system-wide steps (apt
 packages, `/etc/shells`, `chsh`). Everything else runs as the regular
 `TAMINARU_USER` (default: `taminaru`). Because the bootstrap is non-interactive
 (a `curl | bash` one-liner, or re-run via `runuser`), it can never answer a
@@ -9,7 +9,7 @@ sudo password prompt — so that user must have passwordless (NOPASSWD) sudo.
 ## What the bootstrap sets up
 
 When run **as root**, the bootstrap provisions the user via
-[`scripts/provision-user.sh`](../scripts/provision-user.sh) — the same script
+[`scripts/bootstrap/provision-user.sh`](../scripts/bootstrap/provision-user.sh) — the same script
 the devcontainer Dockerfile uses at image build. It is idempotent and:
 
 1. Creates the non-root user if it doesn't exist

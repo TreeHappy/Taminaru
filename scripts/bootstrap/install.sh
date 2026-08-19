@@ -2,10 +2,11 @@
 #
 # Taminaru bootstrap launcher (curl-friendly).
 #
-# Clones the Taminaru repo (or pulls the latest) and runs scripts/bootstrap.sh
-# inside it, so a fresh machine can be provisioned with a single command:
+# Clones the Taminaru repo (or pulls the latest) and runs
+# scripts/bootstrap/bootstrap.sh inside it, so a fresh machine can be
+# provisioned with a single command:
 #
-#   curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/TreeHappy/Taminaru/main/scripts/bootstrap/install.sh | bash
 #
 # Requires curl, git and sudo to already be installed (see README.md).
 #
@@ -38,4 +39,4 @@ else
     || warn "could not pull latest; continuing with local copy"
 fi
 
-exec bash "$REPO_DIR/scripts/bootstrap.sh" "$@"
+exec bash "$REPO_DIR/scripts/bootstrap/bootstrap.sh" "$@"
