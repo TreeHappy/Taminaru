@@ -1,10 +1,26 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # ── Theme selection ──────────────────────────────────────────────────
+  # Change this line to switch themes. Rebuild with:
+  #   home-manager switch --flake .#taminaru
+  #
+  # Available themes:
+  #   "catppuccin-frappe"   — soft pastel palette (default)
+  #   "everforest-dark-hard" — green-toned, high contrast
+  activeTheme = "catppuccin-frappe";
+in
 {
   # home.username / home.homeDirectory are injected by flake.nix (single
   # source of truth for the managed user, overridable via TAMINARU_USER).
   home.stateVersion = "24.05";
   programs.home-manager.enable = true;
+
+  # ── Stylix: unified theming ─────────────────────────────────────────
+  stylix = {
+    enable = true;
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/${activeTheme}.yaml";
+  };
 
   # ── Packages ──────────────────────────────────────────────────────────
   home.packages = with pkgs; [
@@ -108,34 +124,6 @@
 
       # Zoxide
       zoxide init fish | source
-
-      # Catppuccin Frappe (hardcoded — no fisher plugin needed)
-      set -g fish_color_normal c6d0f5
-      set -g fish_color_command 8caaee
-      set -g fish_color_param eebebe
-      set -g fish_color_keyword ca9ee6
-      set -g fish_color_quote a6d189
-      set -g fish_color_redirection f4b8e4
-      set -g fish_color_end ef9f76
-      set -g fish_color_comment 838ba7
-      set -g fish_color_error e78284
-      set -g fish_color_gray 737994
-      set -g fish_color_selection --background=414559
-      set -g fish_color_search_match --background=414559
-      set -g fish_color_option a6d189
-      set -g fish_color_operator f4b8e4
-      set -g fish_color_escape ea999c
-      set -g fish_color_autosuggestion 737994
-      set -g fish_color_cancel e78284
-      set -g fish_color_cwd e5c890
-      set -g fish_color_user 81c8be
-      set -g fish_color_host 8caaee
-      set -g fish_color_host_remote a6d189
-      set -g fish_color_status e78284
-      set -g fish_pager_color_progress 737994
-      set -g fish_pager_color_prefix f4b8e4
-      set -g fish_pager_color_completion c6d0f5
-      set -g fish_pager_color_description 737994
     '';
     shellAbbrs = {};
     functions = {};
@@ -169,29 +157,24 @@
     enable = true;
     settings = {
       character = {
-        success_symbol = "[ 🎏](bold #a6d189)";
-        error_symbol = "[ 👹](bold #e78284)";
+        success_symbol = "[ 🎏](bold)";
+        error_symbol = "[ 👹](bold)";
       };
       git_branch = {
         symbol = "🌿 ";
-        style = "bold #e5c890";
       };
       time = {
         format = "$H:$M:$S";
-        style = "bold #8caaee";
       };
       username = {
-        style_user = "bold #a6d189";
-        style_root = "bold #e78284";
         format = "[$user]($style)";
         disabled = false;
       };
       hostname = {
         ssh_only = true;
-        format = "[@$hostname](bold #a6d189)";
+        format = "[@$hostname](bold)";
       };
       directory = {
-        style = "bold #a6d189";
         format = "[$path]($style) ";
         truncation_length = 3;
         truncation_symbol = "…/";
@@ -207,11 +190,9 @@
         staged = "✓";
         renamed = "🗘";
         deleted = "";
-        style = "bold #e78284";
       };
       docker_context = {
         symbol = " 🐳 ";
-        style = "bold #8caaee";
         format = "[$symbol$context]($style)";
       };
     };
@@ -220,30 +201,12 @@
   # ── Bat ──────────────────────────────────────────────────────────────
   programs.bat = {
     enable = true;
-    config.theme = "Catppuccin Frappe";
   };
 
   # ── FZF ──────────────────────────────────────────────────────────────
   programs.fzf = {
     enable = true;
     defaultCommand = "fd --type f --hidden --follow --exclude .git";
-    colors = {
-      "bg+" = "#414559";
-      bg = "#303446";
-      spinner = "#f2d5cf";
-      hl = "#e78284";
-      fg = "#c6d0f5";
-      header = "#e78284";
-      info = "#ca9ee6";
-      pointer = "#f2d5cf";
-      marker = "#babbf1";
-      "fg+" = "#c6d0f5";
-      prompt = "#ca9ee6";
-      "hl+" = "#e78284";
-      "selected-bg" = "#51576d";
-      border = "#737994";
-      label = "#c6d0f5";
-    };
   };
 
   # ── Eza ──────────────────────────────────────────────────────────────
@@ -352,8 +315,5 @@
 
     # ── Git hooks ──
     "git/hooks/pre-commit/pre-commit".source = ./dotfiles/config/git/hooks/pre-commit/pre-commit;
-
-    # ── Fish: install catppuccin plugin via fisher ──
-    # (handled in programs.fish interactiveShellInit above or via a one-shot script)
   };
 }

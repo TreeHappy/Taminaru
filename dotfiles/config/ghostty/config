@@ -29,7 +29,6 @@ font-family = "MesloLGS Nerd Font Mono"
 font-size = 8
 # window-padding-x = 2
 #
-theme = "Catppuccin Frappe"
 background-opacity = 1.0
 background-blur = 0
 # # Spacing around the equals sign does not matter.
