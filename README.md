@@ -4,39 +4,59 @@
 
 Everything is driven from PowerShell. All tools are provisioned with
 [Nix flakes](https://nixos.wiki/wiki/Flakes) and managed by
-[home-manager](https://github.com/nix-community/home-manager). Themes are
-applied from this repo.
+[home-manager](https://github.com/nix-community/home-manager) in *standalone*
+mode (no NixOS — there is no system-level config to touch). Themes are applied
+from this repo.
 
-###
+### How home-manager works here
 
-Working with this setup
+The repo *is* the config — a single source of truth. The pieces:
+
+| Path | Role |
+| --- | --- |
+| `flake.nix` | entry point: wires up nixpkgs + home-manager and exposes the config |
+| `home.nix` | your home-manager module: packages, programs, dotfiles, env vars |
+| `dotfiles/` | raw config files (nvim, powershell, atuin, ghostty, ...) referenced by `home.nix` |
+| `flake.lock` | exact pinned versions of nixpkgs / home-manager (auto-generated — don't edit) |
+
+Standalone home-manager isn't switched with a `home-manager` binary. The
+flake's default package *is* the activation script, so applying a generation is
+just `nix build` + `./result/activate` (or `nix run`, which is the same thing
+in one command).
+
+### Working with this setup
 
 ```bash
 # Apply all configs + tools to your system (the one command that matters):
 nix run
 
-# Rebuild after editing home.nix or flake.nix:
-nix build
-./result/activate
-
-# One-liner for the above:
+# Rebuild after editing home.nix or flake.nix, then apply — same as `nix run`,
+# but step-by-step:
 nix build && ./result/activate
 
 # Update all inputs (nixpkgs, home-manager) to latest:
 nix flake update
 
-# Garbage collect old generations (reclaim disk space):
-nix-collect-garbage --delete-older-than 5d
-
 # See what generations exist:
 nix profile history --profile ~/.nix-profile
 
-# Roll back to previous generation:
-nix profile rollback
+# Roll back to the previous generation:
+nix profile rollback --profile ~/.nix-profile
+
+# Garbage collect old generations (reclaim disk space):
+nix-collect-garbage --delete-older-than 5d
 ```
 
-**Key concept:** `home.nix` = what you want. `flake.lock` = exact versions pinned.
-Edit `home.nix`, run `nix build && ./result/activate`, commit everything.
+Common tasks:
+
+- **Add a tool:** append it to `home.packages` in `home.nix`, then rebuild.
+- **Change a tool's config:** edit `dotfiles/config/<tool>/` or the
+  `programs.<tool>` block in `home.nix`, then rebuild.
+- **Update everything:** `nix flake update`, then rebuild.
+
+**Key concept:** `home.nix` (plus `dotfiles/`) = what you want. `flake.lock` =
+exact versions pinned. Edit `home.nix` or `dotfiles/`, run
+`nix build && ./result/activate` (or `nix run`), commit everything.
 
 ## Testing
 
@@ -51,11 +71,10 @@ After implementation, verify:
 7. nvim starts with AstroNvim
 8. All tools have consistent Catppuccin Frappe theming
 
-
 ### Dependencies
 
 The full dependency stack — apt packages, Nix packages, and the conda
-packages (imagemagick, lua, luarocks) — is documented in
+packages (lua, luarocks) — is documented in
 [`documentation/dependencies.md`](documentation/dependencies.md).
 
 ### Prerequisites
@@ -111,11 +130,11 @@ how passwordless sudo is set up and verified.
 
 It is idempotent and safe to re-run.
 
-Re-running the bootstrap also **resets the nvim data dirs**
-(`~/.local/share/nvim`, `~/.local/state/nvim`, `~/.cache/nvim` — each moved to
-`<dir>.bak`) so plugins and treesitter parsers are always reinstalled from the
-current config, e.g. after an AstroNvim major upgrade. Set `NVIM_WIPE=0` to keep
-existing nvim state instead.
+Re-running the bootstrap also **purges the nvim data dirs**
+(`~/.local/share/nvim`, `~/.local/state/nvim`, `~/.cache/nvim`, plus any stale
+`<dir>.bak` leftovers) so plugins and treesitter parsers are always reinstalled
+from the current config, e.g. after an AstroNvim major upgrade. Set
+`NVIM_WIPE=0` to keep existing nvim state instead.
 
 ### Your pwsh profile
 
@@ -137,6 +156,3 @@ Pull the latest changes and re-apply:
 ```bash
 git -C ~/Taminaru pull && bash ~/Taminaru/scripts/sync.sh
 ```
-
-Notes:
-- The bootstrap step wipes the nvim data dirs unless `NVIM_WIPE=0` is set.

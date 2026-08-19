@@ -6,7 +6,7 @@ different mechanism and recorded in a different file:
 | Layer | Mechanism | Installed by | Recorded in |
 | --- | --- | --- | --- |
 | System packages | `apt-get` | `scripts/bootstrap.sh` | this doc |
-| Tools | Nix flakes + home-manager | `nix build` / `home-manager switch` | `flake.nix` / `flake.lock` / `home.nix` |
+| Tools | Nix flakes + home-manager | `nix run` (or `nix build` + `./result/activate`) | `flake.nix` / `flake.lock` / `home.nix` |
 | Conda packages | micromamba | manual / bootstrap | this doc |
 
 ## Layer 0 — system prerequisites (apt)
@@ -47,8 +47,9 @@ the Nix PowerShell package.
 
 [Nix](https://nixos.org/download/) is installed by the bootstrap via the
 Determinate Systems installer. All tools are declared in `home.nix` and
-provisioned via `home-manager switch` (or `nix build` + activation). Versions
-are pinned in `flake.lock` (auto-generated, don't edit by hand).
+provisioned via the flake's activation package — `nix run`, or `nix build` +
+`./result/activate` (standalone home-manager, no `home-manager switch`).
+Versions are pinned in `flake.lock` (auto-generated, don't edit by hand).
 
 | Tool | nixpkgs attribute | Purpose |
 | --- | --- | --- |
@@ -67,7 +68,6 @@ are pinned in `flake.lock` (auto-generated, don't edit by hand).
 | imagemagick | `imagemagick` | image manipulation |
 | jj | `jj` | Jujutsu VCS |
 | lazygit | `lazygit` | git TUI |
-| mammouth | `mammouth` (flake input) | AI coding harness |
 | neovim | `neovim` | editor |
 | opencode | `opencode` | AI coding harness |
 | pi | `pi-coding-agent` | AI coding harness |

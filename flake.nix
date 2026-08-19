@@ -24,6 +24,6 @@
 
       # Default output: apply the configuration
       packages.${system}.default =
-        self.homeConfigurations.taminaru.config.activationPackage;
+        self.homeConfigurations.taminaru.config.home.activationPackage;
     };
 }
