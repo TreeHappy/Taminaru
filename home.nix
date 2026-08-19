@@ -2,13 +2,14 @@
 
 let
   # ── Theme selection ──────────────────────────────────────────────────
-  # Change this line to switch themes. Rebuild with:
+  # Switch themes with:  switch-theme <scheme-name>
+  # Or edit current-theme.nix and rebuild with:
   #   home-manager switch --flake .#taminaru
   #
-  # Available themes:
-  #   "catppuccin-frappe"   — soft pastel palette (default)
-  #   "everforest-dark-hard" — green-toned, high contrast
-  activeTheme = "catppuccin-frappe";
+  # Available base16 schemes (from pkgs.base16-schemes):
+  #   catppuccin-frappe, catppuccin-latte, catppuccin-macchiato,
+  #   catppuccin-mocha, everforest-dark-hard, gruvbox-dark-hard, ...
+  activeTheme = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./current-theme.nix);
 in
 {
   # home.username / home.homeDirectory are injected by flake.nix (single

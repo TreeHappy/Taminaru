@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+THEME_FILE="$REPO_DIR/current-theme.nix"
+
+usage() {
+  cat <<EOF
+Usage: switch-theme <scheme-name>
+
+Switch the active base16 color scheme and rebuild home-manager configuration.
+
+Arguments:
+  scheme-name    Name of a base16 scheme from pkgs.base16-schemes
+                 (e.g. catppuccin-frappe, catppuccin-mocha, gruvbox-dark-hard)
+
+Examples:
+  switch-theme catppuccin-mocha
+  switch-theme catppuccin-latte
+  switch-theme gruvbox-dark-hard
+  switch-theme everforest-dark-hard
+
+Available schemes can be found at:
+  https://github.com/tinted-theming/schemes
+  Or locally: ls \$(nix-build '<nixpkgs>' -A base16-schemes --no-out-link)/share/themes/
+EOF
+  exit 1
+}
+
+if [[ $# -ne 1 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+  usage
+fi
+
+SCHEME="$1"
+
+echo "Switching theme to: $SCHEME"
+echo "\"$SCHEME\"" > "$THEME_FILE"
+
+echo "Rebuilding home-manager configuration..."
+home-manager switch --flake "$REPO_DIR#taminaru"
+
+echo ""
+echo "Theme switched to: $SCHEME"
+echo "You may need to restart your terminal or applications for changes to take effect."
