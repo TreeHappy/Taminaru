@@ -8,10 +8,14 @@ sudo password prompt — so that user must have passwordless (NOPASSWD) sudo.
 
 ## What the bootstrap sets up
 
-When run **as root**, the bootstrap:
+When run **as root**, the bootstrap provisions the user via
+[`scripts/provision-user.sh`](../scripts/provision-user.sh) — the same script
+the devcontainer Dockerfile uses at image build. It is idempotent and:
 
 1. Creates the non-root user if it doesn't exist
-   (`useradd -m -s /bin/bash`), or reuses it if it already does.
+   (`useradd -m -s /bin/bash -u $TAMINARU_UID`, default uid 1000), or reuses it
+   if it already does. If it exists with a different uid, it warns and keeps
+   the existing uid.
 2. Always (re)writes the sudoers drop-in as a managed file:
 
    ```bash

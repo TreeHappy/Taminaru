@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  home.username = "taminaru";
-  home.homeDirectory = "/home/taminaru";
+  # home.username / home.homeDirectory are injected by flake.nix (single
+  # source of truth for the managed user, overridable via TAMINARU_USER).
   home.stateVersion = "24.05";
   programs.home-manager.enable = true;
 

@@ -16,8 +16,12 @@ log "📥 Pulling latest Taminaru..."
 git -C "$REPO_DIR" pull --ff-only
 
 log "🔧 Rebuilding home-manager configuration..."
-nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+# The flake keys homeConfigurations by the managed user (read via
+# TAMINARU_USER), so --impure lets the env var reach flake eval.
+HM_USER="${TAMINARU_USER:-$(id -un)}"
+nix build "$REPO_DIR#homeConfigurations.${HM_USER}.activationPackage" \
   --extra-experimental-features "nix-command flakes" \
+  --impure \
   --out-link "$REPO_DIR/result"
 
 log "🔄 Activating home-manager profile..."

@@ -12,15 +12,21 @@
 # reinstalled from the current config — opt out with NVIM_WIPE=0.
 #
 # Running as root on a fresh Ubuntu first creates a non-root user (default:
-# taminaru, passwordless with NOPASSWD sudo), copies this repo into their home,
-# and re-runs the whole bootstrap as that user.
+# taminaru, pinned uid 1000, passwordless with NOPASSWD sudo) via
+# scripts/provision-user.sh — the same script the devcontainer Dockerfile
+# uses — copies this repo into their home, and re-runs the whole bootstrap as
+# that user.
 #
 # Usage: bash scripts/bootstrap.sh
-#        TAMINARU_USER=bob bash scripts/bootstrap.sh
+#        TAMINARU_USER=bob TAMINARU_UID=1000 bash scripts/bootstrap.sh
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TAMINARU_USER="${TAMINARU_USER:-taminaru}"
+TAMINARU_UID="${TAMINARU_UID:-1000}"
+# Exported so the runuser re-run below and the flake (which reads
+# TAMINARU_USER via getEnv) both see the override.
+export TAMINARU_USER TAMINARU_UID
 
 log()  { printf '\033[1;34m[taminaru]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[taminaru]\033[0m ⚠️  %s\n' "$*"; }
@@ -56,41 +62,12 @@ if [ "$(id -u)" -ne 0 ]; then
   fi
 fi
 
-# 0b. Fresh install: when running as root, create a non-root user so we don't
-#     have to use root, then re-run the rest of this script as that user.
+# 0b. Fresh install: when running as root, provision the non-root user via the
+#     shared provisioner (same one the devcontainer Dockerfile uses) so we
+#     don't have to use root, then re-run the rest of this script as that user.
 if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
-  if ! id "$TAMINARU_USER" >/dev/null 2>&1; then
-    log "👤 Creating user $TAMINARU_USER (passwordless, NOPASSWD sudo)..."
-    useradd -m -s /bin/bash "$TAMINARU_USER"
-  else
-    log "👤 user $TAMINARU_USER already exists"
-  fi
-
-  SUDOERS="/etc/sudoers.d/$TAMINARU_USER"
-  log "🔒 Ensuring $TAMINARU_USER has passwordless sudo..."
-  printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$TAMINARU_USER" > "$SUDOERS"
-  chmod 440 "$SUDOERS"
-  visudo -cf "$SUDOERS"
-
-  if ! grep -qE '^[#@]includedir[[:space:]]+/etc/sudoers\.d' /etc/sudoers 2>/dev/null; then
-    SUDOERS_TMP="$(mktemp /etc/sudoers.XXXXXX)"
-    cat /etc/sudoers > "$SUDOERS_TMP"
-    printf '\n@includedir /etc/sudoers.d\n' >> "$SUDOERS_TMP"
-    if visudo -cf "$SUDOERS_TMP" >/dev/null 2>&1; then
-      install -m 0440 "$SUDOERS_TMP" /etc/sudoers
-      log "🔧 added @includedir /etc/sudoers.d to /etc/sudoers"
-    else
-      warn "could not add @includedir /etc/sudoers.d to /etc/sudoers"
-    fi
-    rm -f "$SUDOERS_TMP"
-  fi
-
-  if ! runuser -u "$TAMINARU_USER" -- sudo -n true 2>/dev/null; then
-    warn "passwordless sudo for $TAMINARU_USER is not effective after writing $SUDOERS"
-    warn "check that /etc/sudoers includes '@includedir /etc/sudoers.d' and that sudo-rs >= 0.2.14 is installed (0.2.13 has an /etc/group long-line bug)"
-    exit 1
-  fi
-  log "🔑 passwordless sudo verified for $TAMINARU_USER"
+  log "👤 Provisioning user $TAMINARU_USER (uid $TAMINARU_UID, NOPASSWD sudo)..."
+  bash "$REPO_DIR/scripts/provision-user.sh"
 
   USER_HOME="$(getent passwd "$TAMINARU_USER" | cut -d: -f6)"
   USER_REPO="$USER_HOME/Taminaru"
@@ -123,16 +100,31 @@ if [ "$SANDBOX" = "auto" ]; then
   fi
 fi
 
+# 0d. Lean nix config — assembled once so the installer (--extra-conf) and the
+#     post-install write (nix.custom.conf, included at the bottom of the
+#     Determinate installer's nix.conf so its settings win) share one source.
+NIX_CUSTOM_CONF="/etc/nix/nix.custom.conf"
+NIX_CUSTOM_CONTENT="# Taminaru lean nix config — auto-optimise-store deduplicates store paths
+auto-optimise-store = true
+max-jobs = auto
+allowed-users = $TAMINARU_USER
+trusted-users = root $TAMINARU_USER
+"
+if [ "$SANDBOX" = "0" ]; then
+  NIX_CUSTOM_CONTENT+="sandbox = false
+"
+fi
+
 # 1. Install Nix if missing (via Determinate Systems installer)
 if command -v nix >/dev/null 2>&1; then
   log "🚀 Nix already installed: $(nix --version)"
 else
   log "🚀 Installing Nix (Determinate Systems installer)..."
   INSTALLER_ARGS=("install" "linux" "--no-confirm")
+  # The installer writes --extra-conf into nix.custom.conf; the 1b write below
+  # lands in the same file, belt and suspenders.
+  INSTALLER_ARGS+=("--extra-conf" "$NIX_CUSTOM_CONTENT")
   if [ "$SANDBOX" = "0" ]; then
-    # The installer's nix.conf footer includes nix.custom.conf, so this extra
-    # conf and the 1b write both land in the same place — belt and suspenders.
-    INSTALLER_ARGS+=("--extra-conf" "sandbox = false")
     warn "container without CAP_SYS_ADMIN detected — installing Nix with sandbox disabled (TAMINARU_SANDBOX=1 to force)"
   fi
   if ! pidof systemd >/dev/null 2>&1; then
@@ -150,22 +142,14 @@ else
   log "✅ Nix installed: $(nix --version)"
 fi
 
-# 1b. Lean nix config — write nix.custom.conf (included by Determinate's nix.conf)
-NIX_CUSTOM_CONF="/etc/nix/nix.custom.conf"
-NIX_CUSTOM_CONTENT="# Taminaru lean nix config — auto-optimise-store deduplicates store paths
-auto-optimise-store = true
-max-jobs = auto
-"
-if [ "$SANDBOX" = "0" ]; then
-  NIX_CUSTOM_CONTENT+="sandbox = false
-"
-fi
+# 1b. Write nix.custom.conf (included at the bottom of Determinate's nix.conf,
+#     so its settings win). Content is built once in 0d.
 if [ "$(id -u)" -eq 0 ]; then
   echo "$NIX_CUSTOM_CONTENT" > "$NIX_CUSTOM_CONF"
 else
   echo "$NIX_CUSTOM_CONTENT" | sudo tee "$NIX_CUSTOM_CONF" > /dev/null
 fi
-log "✅ nix.custom.conf written (auto-optimise-store, max-jobs auto)"
+log "✅ nix.custom.conf written (auto-optimise-store, max-jobs, allowed/trusted users)"
 
 # 1c. Ensure nix-daemon is running (required for nix build).
 #     On systemd systems the daemon is managed by its service unit.
@@ -200,14 +184,17 @@ fi
 
 # 2. Apply home-manager configuration (tools + dotfiles)
 log "🔧 Applying home-manager configuration..."
-NIX_BUILD_ARGS=(--extra-experimental-features "nix-command flakes")
+# The flake keys homeConfigurations by the managed user (read via
+# TAMINARU_USER), so --impure lets the env var reach flake eval.
+HM_USER="${TAMINARU_USER:-$(id -un)}"
+NIX_BUILD_ARGS=(--extra-experimental-features "nix-command flakes" --impure)
 if [ "$SANDBOX" = "0" ]; then
   NIX_BUILD_ARGS+=(--option sandbox false)
 fi
 if [ -d "$REPO_DIR/.git" ]; then
   # If in a git repo, use nix build + activate
-  log "📦 Building home-manager activation package..."
-  nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+  log "📦 Building home-manager activation package for $HM_USER..."
+  nix build "$REPO_DIR#homeConfigurations.${HM_USER}.activationPackage" \
     "${NIX_BUILD_ARGS[@]}" \
     --out-link "$REPO_DIR/result"
 
@@ -216,7 +203,7 @@ if [ -d "$REPO_DIR/.git" ]; then
 else
   # Fallback: use nix run directly
   log "📦 Building and activating via nix run..."
-  nix run "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
+  nix run "$REPO_DIR#homeConfigurations.${HM_USER}.activationPackage" \
     "${NIX_BUILD_ARGS[@]}"
 fi
 

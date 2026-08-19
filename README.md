@@ -27,12 +27,13 @@ in one command).
 ### Working with this setup
 
 ```bash
-# Apply all configs + tools to your system (the one command that matters):
-nix run
+# Apply all configs + tools to your system (the one command that matters).
+# --impure is needed because flake.nix reads TAMINARU_USER via getEnv:
+nix run --impure
 
 # Rebuild after editing home.nix or flake.nix, then apply — same as `nix run`,
 # but step-by-step:
-nix build && ./result/activate
+nix build --impure && ./result/activate
 
 # Update all inputs (nixpkgs, home-manager) to latest:
 nix flake update
@@ -125,10 +126,14 @@ bash scripts/sync-push.sh   # commit + push any repo changes
 ```
 
 Running as root (e.g. right after a fresh Ubuntu install) first creates a
-non-root user — default name `taminaru`, passwordless with NOPASSWD sudo,
-overridable via `TAMINARU_USER=bob bash scripts/bootstrap.sh` — copies this
-repo into that user's home, and re-runs the rest of the bootstrap as them, so
-you never have to use root. See
+non-root user — default name `taminaru`, pinned uid 1000, passwordless with
+NOPASSWD sudo, overridable via `TAMINARU_USER=bob` and `TAMINARU_UID=1000` —
+copies this repo into that user's home, and re-runs the rest of the bootstrap
+as them, so you never have to use root. The user is provisioned by
+[`scripts/provision-user.sh`](scripts/provision-user.sh), the same script the
+[devcontainer Dockerfile](.devcontainer/Dockerfile) uses, so the user
+definition can't drift. `TAMINARU_USER` also drives the flake (`nix build
+.#homeConfigurations.<user>`), so an override applies end-to-end. See
 [`documentation/passwordless-sudo.md`](documentation/passwordless-sudo.md) for
 how passwordless sudo is set up and verified.
 
