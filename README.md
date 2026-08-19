@@ -110,6 +110,10 @@ Or, if you already have the repo cloned, run the bootstrap directly:
 bash scripts/bootstrap.sh
 ```
 
+Inside unprivileged containers (plain `docker run`, rootless podman) the script
+detects that the Nix sandbox can't run and disables it automatically — see
+[`documentation/containers-and-sandbox.md`](documentation/containers-and-sandbox.md).
+
 ### Dotfiles sync (home-manager)
 
 The repo's `home.nix` and `dotfiles/` are the single source of truth. Config is

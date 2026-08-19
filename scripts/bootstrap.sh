@@ -132,6 +132,28 @@ NIX_CUSTOM_CONTENT="# Taminaru lean nix config — auto-optimise-store deduplica
 auto-optimise-store = true
 max-jobs = auto
 "
+
+# Nix's build sandbox needs to create namespaces and call sethostname(), which
+# unprivileged containers (Docker's default seccomp, rootless podman) block —
+# every nix build then dies with 'cannot set host name: Operation not permitted'.
+# Detect that and fall back to unsandboxed builds. Force with TAMINARU_SANDBOX=1.
+SANDBOX="${TAMINARU_SANDBOX:-auto}"
+if [ "$SANDBOX" = "auto" ]; then
+  if [ -f /.dockerenv ] || [ -f /run/.containerenv ]; then
+    SANDBOX=0
+  else
+    CAP_SYS_ADMIN=$((1 << 21))
+    CAPS="$(sed -n 's/^CapEff:[[:space:]]*\([0-9a-fA-F]*\)[[:space:]]*$/\1/p' /proc/self/status 2>/dev/null || true)"
+    if [ -n "$CAPS" ] && [ $((0x$CAPS & CAP_SYS_ADMIN)) -eq 0 ]; then
+      SANDBOX=0
+    fi
+  fi
+fi
+if [ "$SANDBOX" = "0" ]; then
+  NIX_CUSTOM_CONTENT+="sandbox = false
+"
+  warn "container without CAP_SYS_ADMIN detected — Nix sandbox disabled (TAMINARU_SANDBOX=1 to force)"
+fi
 if [ "$(id -u)" -eq 0 ]; then
   echo "$NIX_CUSTOM_CONTENT" > "$NIX_CUSTOM_CONF"
 else
