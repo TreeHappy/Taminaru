@@ -9,9 +9,7 @@
     },
     "remoteUser": "taminaru",
     "containerEnv": {
-        "MISE_TRUST_ALL": "1",
-        "DEBIAN_FRONTEND": "noninteractive",
-        "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        "USER": "taminaru"
     },
     "features": {
         "ghcr.io/devcontainers/features/sshd:1": {}
