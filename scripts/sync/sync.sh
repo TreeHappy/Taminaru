@@ -57,6 +57,7 @@ sync_apply() {
     --out-link "$REPO_DIR/result"
 
   log "🔄 Activating home-manager profile..."
+  export USER="${USER:-$(id -un)}"
   "$REPO_DIR/result/activate"
   log "✅ Done."
 }
