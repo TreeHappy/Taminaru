@@ -105,12 +105,36 @@ if [ "$(id -u)" -eq 0 ] && [ "$TAMINARU_USER" != "root" ]; then
   exit $?
 fi
 
+# 0c. Nix build sandbox detection — the sandbox needs to create namespaces and
+#     call sethostname(), which unprivileged containers (Docker's default
+#     seccomp, rootless podman) block, so every nix build dies with 'cannot set
+#     host name: Operation not permitted'. Detect that and build unsandboxed.
+#     Force with TAMINARU_SANDBOX=1 (on) or =0 (off).
+SANDBOX="${TAMINARU_SANDBOX:-auto}"
+if [ "$SANDBOX" = "auto" ]; then
+  if [ -f /.dockerenv ] || [ -f /run/.containerenv ]; then
+    SANDBOX=0
+  else
+    CAP_SYS_ADMIN=$((1 << 21))
+    CAPS="$(sed -n 's/^CapEff:[[:space:]]*\([0-9a-fA-F]*\)[[:space:]]*$/\1/p' /proc/self/status 2>/dev/null || true)"
+    if [ -n "$CAPS" ] && [ $((0x$CAPS & CAP_SYS_ADMIN)) -eq 0 ]; then
+      SANDBOX=0
+    fi
+  fi
+fi
+
 # 1. Install Nix if missing (via Determinate Systems installer)
 if command -v nix >/dev/null 2>&1; then
   log "🚀 Nix already installed: $(nix --version)"
 else
   log "🚀 Installing Nix (Determinate Systems installer)..."
   INSTALLER_ARGS=("install" "linux" "--no-confirm")
+  if [ "$SANDBOX" = "0" ]; then
+    # The installer's nix.conf footer includes nix.custom.conf, so this extra
+    # conf and the 1b write both land in the same place — belt and suspenders.
+    INSTALLER_ARGS+=("--extra-conf" "sandbox = false")
+    warn "container without CAP_SYS_ADMIN detected — installing Nix with sandbox disabled (TAMINARU_SANDBOX=1 to force)"
+  fi
   if ! pidof systemd >/dev/null 2>&1; then
     INSTALLER_ARGS+=("--init" "none")
     log "🔧 systemd not detected, installing without init service"
@@ -132,27 +156,9 @@ NIX_CUSTOM_CONTENT="# Taminaru lean nix config — auto-optimise-store deduplica
 auto-optimise-store = true
 max-jobs = auto
 "
-
-# Nix's build sandbox needs to create namespaces and call sethostname(), which
-# unprivileged containers (Docker's default seccomp, rootless podman) block —
-# every nix build then dies with 'cannot set host name: Operation not permitted'.
-# Detect that and fall back to unsandboxed builds. Force with TAMINARU_SANDBOX=1.
-SANDBOX="${TAMINARU_SANDBOX:-auto}"
-if [ "$SANDBOX" = "auto" ]; then
-  if [ -f /.dockerenv ] || [ -f /run/.containerenv ]; then
-    SANDBOX=0
-  else
-    CAP_SYS_ADMIN=$((1 << 21))
-    CAPS="$(sed -n 's/^CapEff:[[:space:]]*\([0-9a-fA-F]*\)[[:space:]]*$/\1/p' /proc/self/status 2>/dev/null || true)"
-    if [ -n "$CAPS" ] && [ $((0x$CAPS & CAP_SYS_ADMIN)) -eq 0 ]; then
-      SANDBOX=0
-    fi
-  fi
-fi
 if [ "$SANDBOX" = "0" ]; then
   NIX_CUSTOM_CONTENT+="sandbox = false
 "
-  warn "container without CAP_SYS_ADMIN detected — Nix sandbox disabled (TAMINARU_SANDBOX=1 to force)"
 fi
 if [ "$(id -u)" -eq 0 ]; then
   echo "$NIX_CUSTOM_CONTENT" > "$NIX_CUSTOM_CONF"
@@ -194,11 +200,15 @@ fi
 
 # 2. Apply home-manager configuration (tools + dotfiles)
 log "🔧 Applying home-manager configuration..."
+NIX_BUILD_ARGS=(--extra-experimental-features "nix-command flakes")
+if [ "$SANDBOX" = "0" ]; then
+  NIX_BUILD_ARGS+=(--option sandbox false)
+fi
 if [ -d "$REPO_DIR/.git" ]; then
   # If in a git repo, use nix build + activate
   log "📦 Building home-manager activation package..."
   nix build "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
-    --extra-experimental-features "nix-command flakes" \
+    "${NIX_BUILD_ARGS[@]}" \
     --out-link "$REPO_DIR/result"
 
   log "🔄 Activating home-manager profile..."
@@ -207,7 +217,7 @@ else
   # Fallback: use nix run directly
   log "📦 Building and activating via nix run..."
   nix run "$REPO_DIR#homeConfigurations.taminaru.activationPackage" \
-    --extra-experimental-features "nix-command flakes"
+    "${NIX_BUILD_ARGS[@]}"
 fi
 
 # 2a. Reset stale nvim data dirs (plugins, LSP servers, treesitter parsers,

@@ -21,16 +21,25 @@ Unprivileged containers block this:
 - Docker's default seccomp profile blocks the `sethostname` syscall outright.
 - Without `CAP_SYS_ADMIN` (dropped unless you pass `--cap-add SYS_ADMIN` or
   `--privileged`) the namespaces themselves can't be created.
+- Rootless Podman runs the container in a user namespace with no `CAP_SYS_ADMIN`
+  at all, so every sandboxed build fails the same way.
 
 Either way the sandbox setup fails with `Operation not permitted`. This is a
 well-known Nix issue (NixOS/nix#11810) and is not specific to Taminaru.
 
 ## Fix
 
-`scripts/bootstrap.sh` detects this at bootstrap time and writes
-`sandbox = false` to `/etc/nix/nix.custom.conf` (a file the Determinate Systems
-installer includes from its main `nix.conf`), so all builds — including later
-`scripts/sync.sh` runs and the `nix-daemon` — run unsandboxed.
+`scripts/bootstrap.sh` detects this at bootstrap time and builds unsandboxed:
+
+- When installing Nix it passes `--extra-conf "sandbox = false"` to the
+  Determinate installer (the officially recommended approach for Podman), which
+  writes it into `/etc/nix/nix.custom.conf` — a file the installer's `nix.conf`
+  includes at the bottom, so it wins over the installer's `sandbox = true`.
+- It also rewrites `sandbox = false` into `/etc/nix/nix.custom.conf` on every
+  run, and passes `--option sandbox false` to the home-manager build itself.
+
+So all builds — including later `scripts/sync.sh` runs and the `nix-daemon` —
+run unsandboxed.
 
 Detection is automatic when:
 
