@@ -105,6 +105,18 @@
     functions = {};
   };
 
+  # ── Bash dotfiles: overwrite Ubuntu-provided files ──────────────────
+  # programs.bash writes ~/.bashrc, ~/.profile and ~/.bash_profile through
+  # home.file with force = false. On the devcontainer image those files
+  # already exist (copied from /etc/skel), so without force = true
+  # home-manager aborts with "Existing file ... would be clobbered".
+  # The bash module only sets `.source`, so these force flags merge cleanly.
+  home.file = {
+    ".bashrc".force = true;
+    ".profile".force = true;
+    ".bash_profile".force = true;
+  };
+
   # ── Git ──────────────────────────────────────────────────────────────
   programs.git = {
     enable = true;
