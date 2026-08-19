@@ -1,11 +1,56 @@
 ![./images/terminal.png](./images/kiddy.png)
-![./images/currentscreen.png](./images/currentscreen.png)
+
 ## Usage
 
 Everything is driven from PowerShell. All tools are provisioned with
 [Nix flakes](https://nixos.wiki/wiki/Flakes) and managed by
 [home-manager](https://github.com/nix-community/home-manager). Themes are
 applied from this repo.
+
+###
+
+Working with this setup
+
+```bash
+# Apply all configs + tools to your system (the one command that matters):
+nix run
+
+# Rebuild after editing home.nix or flake.nix:
+nix build
+./result/activate
+
+# One-liner for the above:
+nix build && ./result/activate
+
+# Update all inputs (nixpkgs, home-manager) to latest:
+nix flake update
+
+# Garbage collect old generations (reclaim disk space):
+nix-collect-garbage --delete-older-than 5d
+
+# See what generations exist:
+nix profile history --profile ~/.nix-profile
+
+# Roll back to previous generation:
+nix profile rollback
+```
+
+**Key concept:** `home.nix` = what you want. `flake.lock` = exact versions pinned.
+Edit `home.nix`, run `nix build && ./result/activate`, commit everything.
+
+## Testing
+
+After implementation, verify:
+
+1. `nix build` succeeds (flake evaluates without errors)
+2. `nix run` or home-manager activation applies all configs to $HOME
+3. All tools are on PATH after activation
+4. pwsh starts and loads profile correctly
+5. fish starts and loads all conf.d scripts
+6. starship prompt renders with Catppuccin Frappe colors
+7. nvim starts with AstroNvim
+8. All tools have consistent Catppuccin Frappe theming
+
 
 ### Dependencies
 
