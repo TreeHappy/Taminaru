@@ -31,6 +31,22 @@ sync_apply() {
   log "📥 Pulling latest Taminaru..."
   git -C "$REPO_DIR" pull --ff-only
 
+  # Ensure nix-daemon is running (needed for nix build).
+  if ! pidof systemd >/dev/null 2>&1; then
+    if [ -e /nix/var/nix/daemon-socket/socket ]; then
+      if ! nix store ping --extra-experimental-features "nix-command" 2>/dev/null; then
+        log "Restarting stale nix-daemon..."
+        sudo rm -f /nix/var/nix/daemon-socket/socket
+        sudo /nix/var/nix/profiles/default/bin/nix-daemon &
+        sleep 2
+      fi
+    else
+      log "Starting nix-daemon..."
+      sudo /nix/var/nix/profiles/default/bin/nix-daemon &
+      sleep 2
+    fi
+  fi
+
   log "🔧 Rebuilding home-manager configuration..."
   # The flake keys homeConfigurations by the managed user (read via
   # TAMINARU_USER), so --impure lets the env var reach flake eval.
