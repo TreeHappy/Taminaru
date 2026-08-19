@@ -1,6 +1,8 @@
 # atuin config (managed by scripts/bootstrap.sh)
 db_path = "~/.local/share/atuin/history.db"
-theme = "catppuccin-frappe-peach"
+
+[theme]
+name = "catppuccin-frappe-peach"
 
 [ai]
 enabled = true

@@ -1,5 +1,24 @@
+# --- Nix environment bootstrap ---
+# pwsh is the login shell but does not source /etc/profile.d/nix.sh (that is
+# bash/sh-only), so a fresh login shell misses the Nix profile PATH and TLS
+# cert vars. Mirror the essential exports from nix-daemon.sh here.
+$nixDefault = "/nix/var/nix/profiles/default"
+$nixProfile = Join-Path $env:HOME ".nix-profile"
+
+$env:NIX_PROFILES = "$nixDefault $nixProfile"
+if (-not $env:NIX_SSL_CERT_FILE) {
+  $env:NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt"
+}
+
+foreach ($dir in @((Join-Path $nixProfile "bin"), (Join-Path $nixDefault "bin"))) {
+  if ((Test-Path $dir) -and ($env:PATH -notmatch [regex]::Escape($dir))) {
+    $env:PATH = "$dir$([IO.Path]::PathSeparator)$env:PATH"
+  }
+}
+
 # pwsh keeps its own atuin history DB (separate from fish)
 $env:ATUIN_DB_PATH = Join-Path $env:HOME ".local/share/atuin/pwsh/history.db"
+Import-Module PSReadLine
 if (Get-Command atuin -ErrorAction SilentlyContinue) { atuin init powershell | Out-String | Invoke-Expression }
 
 # --- Atuin AI: '?' on an empty prompt (managed by Taminaru) ---
@@ -46,7 +65,7 @@ if ($IsWindows) {
     $env:STARSHIP_CONFIG = Join-Path $env:HOME ".config/starship.toml"
 }
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
-carapace _carapace | Out-String | Invoke-Expression
+carapace _carapace powershell | Out-String | Invoke-Expression
 
 Invoke-Expression (&starship init powershell)
 
