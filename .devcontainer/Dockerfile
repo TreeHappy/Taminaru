@@ -1,21 +1,15 @@
 # Taminaru Codespaces devcontainer
 #
-# Based on the official devcontainers ubuntu template:
-#   https://github.com/devcontainers/templates/tree/main/src/ubuntu
-# Base image: mcr.microsoft.com/devcontainers/base:ubuntu (resolute / Ubuntu
-# 26.04). Unlike a bare `ubuntu:26.04` this ships ca-certificates (so curl can
-# reach mise.run), plus git, curl, sudo, common-utils and the `vscode` user.
-#
-# Everything from mise.toml/mise.lock (incl. pwsh) is provisioned by
-# scripts/bootstrap.sh, which is executed HERE so the whole toolchain and the
-# pwsh default shell are baked into the image (no wait at container start).
-ARG VARIANT="ubuntu"
-FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
+# Lean base: bare `ubuntu:26.04` (~39MB) instead of the devcontainers ubuntu
+# image. Everything (tools, dotfiles, treesitter C compiler via nix `zig`,
+# pwsh default shell) is provisioned at container start by
+# scripts/bootstrap.sh via home-manager, so the image only needs the bootstrap
+# prerequisites (curl, git, sudo) plus ca-certificates for TLS.
+ARG VARIANT="26.04"
+FROM ubuntu:${VARIANT}
 
-# ICU is required by PowerShell/.NET globalization. mise installs pwsh from a
-# tarball (no apt deps), so the system must provide libicu.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends libicu-dev \
+    && apt-get -y install --no-install-recommends ca-certificates curl git sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Non-root user (matches devcontainer.json "remoteUser") with passwordless sudo.
@@ -25,9 +19,5 @@ RUN useradd -m -s /bin/bash taminaru \
 
 RUN chown -R taminaru:taminaru /home/taminaru
 
-# Make pwsh the default shell (needs to be in /etc/shells first).
-USER root
-RUN echo '/home/taminaru/.local/bin/pwsh' >> /etc/shells \
-    && chsh -s /home/taminaru/.local/bin/pwsh taminaru
 USER taminaru
 WORKDIR /home/taminaru

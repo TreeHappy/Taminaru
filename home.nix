@@ -35,6 +35,42 @@
     yazi
     zoxide
     fish
+    # C compiler for nvim's treesitter parsers. nvim-treesitter compiles
+    # parsers via `tree-sitter build` (the `cc` crate). tree-sitter-cli treats
+    # zig as clang and passes `--target=<host-triple>` (e.g.
+    # x86_64-unknown-linux-gnu), which zig's clang driver rejects, so the
+    # shims strip that flag before invoking `zig cc`/`zig c++`.
+    zig
+    (pkgs.writeShellScriptBin "cc" ''
+      args=()
+      for a in "$@"; do
+        case "$a" in
+          --target=*) continue ;;
+          *) args+=("$a") ;;
+        esac
+      done
+      exec ${pkgs.zig}/bin/zig cc "''${args[@]}"
+    '')
+    (pkgs.writeShellScriptBin "c++" ''
+      args=()
+      for a in "$@"; do
+        case "$a" in
+          --target=*) continue ;;
+          *) args+=("$a") ;;
+        esac
+      done
+      exec ${pkgs.zig}/bin/zig c++ "''${args[@]}"
+    '')
+    (pkgs.writeShellScriptBin "cxx" ''
+      args=()
+      for a in "$@"; do
+        case "$a" in
+          --target=*) continue ;;
+          *) args+=("$a") ;;
+        esac
+      done
+      exec ${pkgs.zig}/bin/zig c++ "''${args[@]}"
+    '')
   ];
 
   # ── Shell: Bash (minimal — hands off to pwsh) ────────────────────────

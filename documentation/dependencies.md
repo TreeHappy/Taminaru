@@ -25,8 +25,7 @@ apt-get install -y curl git sudo
 The full apt list (`scripts/bootstrap.sh`):
 
 ```bash
-curl git sudo unzip ca-certificates libicu-dev \
-  libssl3 libgssapi-krb5-2 zlib1g build-essential libreadline-dev tmate
+curl git sudo ca-certificates
 ```
 
 What each is for:
@@ -36,15 +35,13 @@ What each is for:
 | `curl` | fetches the Nix installer and the bootstrap one-liner |
 | `git` | clones/copies the repo; used by the whole toolchain |
 | `sudo` | the few system-wide steps (apt, `/etc/shells`, `chsh`) |
-| `unzip` | used by Nix and various package builds |
 | `ca-certificates` | TLS trust store so curl/git can reach GitHub |
-| `libicu-dev` | ICU is required by PowerShell/.NET globalization |
-| `libssl3` | TLS runtime lib for gh, curl, node, etc. |
-| `libgssapi-krb5-2` | Kerberos/GSSAPI runtime for git/gh network auth |
-| `zlib1g` | compression runtime lib |
-| `build-essential` | `cc`/`gcc` required to compile nvim's treesitter parsers |
-| `tmate` | share live terminal sessions over the internet — hands out an SSH URL and an HTTPS web link for guests |
-| `libreadline-dev` | readline dev headers (pulls in `libncurses-dev`) so lazy.nvim's hererocks can build the sandboxed Lua 5.1 needed by the `image.nvim`/`magick` luarocks |
+
+Everything else — including the C compiler for nvim's treesitter parsers —
+comes from Nix via home-manager (see Layer 1): `zig` is installed through
+`home.nix`, and `cc`/`c++`/`cxx` are shimmed to `zig cc`/`zig c++` so parser
+compilation needs no system `build-essential`/gcc. ICU for pwsh is bundled by
+the Nix PowerShell package.
 
 ## Layer 1 — tools (Nix flakes + home-manager)
 
@@ -82,6 +79,7 @@ are pinned in `flake.lock` (auto-generated, don't edit by hand).
 | yazi | `yazi` | terminal file manager |
 | zoxide | `zoxide` | smarter `cd` |
 | fish | `fish` | interactive shell |
+| zig | `zig` | C/C++ compiler (`cc`/`c++`/`cxx` shims) for nvim's treesitter parser builds |
 
 
 Each tool's config lives in `dotfiles/config/<tool>/` and is applied to
@@ -122,11 +120,13 @@ by default).
 
 ```bash
 # Layer 0
-apt-cache policy libicu-dev libssl3 build-essential libreadline-dev
+apt-cache policy ca-certificates
 
 # Layer 1
 nix profile list                     # every Nix package
 nix eval .#homeConfigurations.taminaru.config.home.packages --json | jq length
+zig version                          # treesitter compiler via nix
+cc --version                         # -> zig cc shim
 
 # Layer 2
 micromamba list | grep -E '^lua|luarocks'

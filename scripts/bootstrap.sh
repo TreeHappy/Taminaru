@@ -31,8 +31,8 @@ log "✨ Taminaru dotfiles bootstrap (Nix) — sit back, we've got this"
 #    later check in this script sees real state. apt-get is idempotent, so
 #    re-runs are no-ops. As root we don't need sudo; otherwise sudo must
 #    already be installed (see README.md).
-#    build-essential (cc/gcc) is required for nvim's treesitter parsers, so it
-#    is installed here BEFORE the passwordless-sudo check below.
+#    Everything else — including the treesitter C compiler (`zig cc`) — comes
+#    from Nix via home-manager, so no build-essential / gcc is needed here.
 export DEBIAN_FRONTEND="noninteractive"
 APT_GET="apt-get"
 if [ "$(id -u)" -ne 0 ]; then
@@ -42,12 +42,9 @@ if [ "$(id -u)" -ne 0 ]; then
   fi
   APT_GET="sudo apt-get"
 fi
-log "📦 Installing apt packages (curl git sudo unzip xz-utils build-essential libreadline-dev libicu-dev tmate ...)..."
+log "📦 Installing apt packages (curl git sudo ca-certificates)..."
 $APT_GET update
-$APT_GET install -y curl git sudo unzip xz-utils ca-certificates libicu-dev \
-  libssl3 libgssapi-krb5-2 zlib1g build-essential \
-  tmate \
-  libreadline-dev
+$APT_GET install -y curl git sudo ca-certificates --no-install-recommends
 
 # 0a. Validate passwordless sudo (needed for /etc/shells, chsh, and the
 #     sudoers self-heal on fresh installs). Runs after apt so the required

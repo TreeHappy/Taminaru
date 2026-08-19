@@ -4,7 +4,7 @@
         "dockerfile": "Dockerfile",
         "context": "..",
         "args": {
-            "VARIANT": "ubuntu"
+            "VARIANT": "26.04"
         }
     },
     "remoteUser": "taminaru",
